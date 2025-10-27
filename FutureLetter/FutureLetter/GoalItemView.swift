@@ -9,7 +9,9 @@ import SwiftUI
 
 struct GoalItemView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationLink(destination: GoalHistoryListView()){
+            Text("목표 히스토리 보기")
+        }
     }
 }
 
