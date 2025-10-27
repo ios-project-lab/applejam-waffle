@@ -2,20 +2,20 @@
 //  GoalListView.swift
 //  FutureLetter
 //
-<<<<<<< HEAD
+//<<<<<<< HEAD
 //  Created by mac08 on 10/27/25.
-=======
+//=======
 //  Created by Chaemin Yu on 10/27/25.
->>>>>>> 0f9b67856fd066d517725d7517b03dc716b070dd
+//>>>>>>> 0f9b67856fd066d517725d7517b03dc716b070dd
 //
 
 import SwiftUI
 
 struct GoalListView: View {
     var body: some View {
-<<<<<<< HEAD
+//<<<<<<< HEAD
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-=======
+//=======
         NavigationView{
             VStack{
                 NavigationLink(destination: GoalHistoryListView()){
@@ -29,7 +29,7 @@ struct GoalListView: View {
                 }
             }
         }
->>>>>>> 0f9b67856fd066d517725d7517b03dc716b070dd
+//>>>>>>> 0f9b67856fd066d517725d7517b03dc716b070dd
     }
 }
 
