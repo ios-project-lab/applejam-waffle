@@ -9,10 +9,12 @@ import SwiftUI
 
 struct SignUpView: View {
     var body: some View {
-        NavigationLink(destination: HomeView()){
-            Text("회원가입 완료")
+            NavigationLink(destination: LoginView()){
+                Text("회원가입 완료")
+            }
         }
-}
+    }
+
 
 #Preview {
     SignUpView()
