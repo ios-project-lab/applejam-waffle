@@ -11,7 +11,7 @@ import SwiftUI
 struct FutureLetterApp: App {
     var body: some Scene {
         WindowGroup {
-            SignUpView()
+            GoalListView()
         }
     }
 }

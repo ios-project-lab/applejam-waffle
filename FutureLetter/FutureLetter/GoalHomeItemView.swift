@@ -14,5 +14,5 @@ struct GoalHomeItemView: View {
 }
 
 #Preview {
-    GoalHomeItemView()
+    ContentView()
 }
