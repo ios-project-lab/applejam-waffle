@@ -2,6 +2,17 @@
 //  TabBarView.swift
 //  FutureLetter
 //
-//  Created by mac08 on 10/27/25.
+//  Created by Chaemin Yu on 10/27/25.
 //
 
+import SwiftUI
+
+struct TabBarView: View {
+    var body: some View {
+        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+    }
+}
+
+#Preview {
+    TabBarView()
+}

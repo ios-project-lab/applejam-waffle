@@ -10,33 +10,9 @@
 		D831D0FA2EAF1ECB00C40B68 /* FutureLetter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FutureLetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D831D12E2EAF209200C40B68 /* Exceptions for "FutureLetter" folder in "FutureLetter" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				GoalItemView.swift,
-			);
-			target = D831D0F92EAF1ECB00C40B68 /* FutureLetter */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		D831D12F2EAF209200C40B68 /* Exceptions for "FutureLetter" folder in "Copy Bundle Resources" phase from "FutureLetter" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = D831D0F82EAF1ECB00C40B68 /* Resources */;
-			membershipExceptions = (
-				GoalItemView.swift,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D831D0FC2EAF1ECB00C40B68 /* FutureLetter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D831D12E2EAF209200C40B68 /* Exceptions for "FutureLetter" folder in "FutureLetter" target */,
-				D831D12F2EAF209200C40B68 /* Exceptions for "FutureLetter" folder in "Copy Bundle Resources" phase from "FutureLetter" target */,
-			);
 			path = FutureLetter;
 			sourceTree = "<group>";
 		};
