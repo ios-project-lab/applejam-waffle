@@ -9,9 +9,7 @@ import SwiftUI
 
 struct SignUpView: View {
     var body: some View {
-            NavigationLink(destination: LoginView()){
-                Text("회원가입 완료")
-            }
+
         }
     }
 
