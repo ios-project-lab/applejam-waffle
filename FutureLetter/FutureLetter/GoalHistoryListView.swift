@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct GoalHistoryListView: View {
+    // Simple mock of history (reusing goals)
+    @EnvironmentObject var appState: AppState
     var body: some View {
-        NavigationLink(destination: GoalHistoryDetailView()){
-            Text("목표 히스토리 디테일 보기")
+        List {
+            ForEach(appState.goals) { g in
+                NavigationLink(destination: GoalHistoryDetailView(goal: g)) {
+                    GoalHistoryItemView(goal: g)
+                }
+            }
         }
-        NavigationLink(destination: GoalHistoryItemView()){
-            Text("목표 히스토리 아이템 보기")
-        }
+        .navigationTitle("목표 히스토리")
     }
-}
-
-#Preview {
-    GoalHistoryListView()
 }

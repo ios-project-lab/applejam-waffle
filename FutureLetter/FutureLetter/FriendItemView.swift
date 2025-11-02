@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct FriendItemView: View {
+    var friend: Friend
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        // 친구에게 편지보내는 뷰 연결
-        NavigationLink("친구에게 편지보내기", destination: LetterComposeView())
-        NavigationLink("친구 차단", destination: BlockFriendsView())
+        HStack {
+            Circle().frame(width: 44, height: 44).overlay(Text(String(friend.displayName.prefix(1))))
+            VStack(alignment: .leading) {
+                Text(friend.displayName).bold()
+                Text("@\(friend.username)").font(.caption).foregroundColor(.secondary)
+            }
+            Spacer()
+            if friend.blocked { Text("차단됨").font(.caption).foregroundColor(.red) }
+        }.padding(.vertical, 6)
     }
-}
-
-#Preview {
-    FriendItemView()
 }

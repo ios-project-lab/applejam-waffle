@@ -8,12 +8,26 @@
 import SwiftUI
 
 struct LetterInBoxView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        NavigationLink("편지 상세페이지", destination: LetterDetailView())
-    }
-}
+    @EnvironmentObject var appState: AppState
 
-#Preview {
-    LetterInBoxView()
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(appState.inbox) { letter in
+                    NavigationLink(destination: LetterDetailView(letter: letter)) {
+                        LetterItemView(letter: letter)
+                    }
+                }
+                .onDelete { idx in
+                    appState.inbox.remove(atOffsets: idx)
+                }
+            }
+            .navigationTitle("편지함")
+            .toolbar {
+                NavigationLink(destination: LetterComposeView()) {
+                    Image(systemName: "square.and.pencil")
+                }
+            }
+        }
+    }
 }

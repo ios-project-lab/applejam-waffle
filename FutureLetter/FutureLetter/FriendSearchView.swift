@@ -8,12 +8,22 @@
 import SwiftUI
 
 struct FriendSearchView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        NavigationLink("친구 프로필 보기", destination: FriendProfileView())
-    }
-}
+    @EnvironmentObject var appState: AppState
+    @State private var query = ""
 
-#Preview {
-    FriendSearchView()
+    var body: some View {
+        VStack {
+            TextField("검색할 사용자명", text: $query).textFieldStyle(.roundedBorder).padding()
+            Button {
+                // Mock: add a friend with query
+                guard !query.isEmpty else { return }
+                let f = Friend(username: query, displayName: query)
+                appState.friends.append(f)
+                query = ""
+            } label: {
+                Text("친구 추가").frame(maxWidth: .infinity).padding().background(Color.yellow).cornerRadius(8)
+            }.padding(.horizontal)
+            Spacer()
+        }.navigationTitle("친구 검색")
+    }
 }

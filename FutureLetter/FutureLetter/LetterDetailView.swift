@@ -8,12 +8,28 @@
 import SwiftUI
 
 struct LetterDetailView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        NavigationLink("친구에게 답신하기", destination: LetterReplyView())
-    }
-}
+    @EnvironmentObject var appState: AppState
+    var letter: Letter
 
-#Preview {
-    LetterDetailView()
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("From: \(letter.from)").bold()
+                Spacer()
+                Text(letter.date, style: .date).font(.caption)
+            }
+            Text(letter.subject).font(.headline)
+            Divider()
+            ScrollView {
+                Text(letter.body)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Spacer()
+            NavigationLink(destination: LetterReplyView(original: letter)) {
+                Text("답장 보내기").frame(maxWidth: .infinity).padding().background(Color.yellow).cornerRadius(8).foregroundColor(.white)
+            }
+        }
+        .padding()
+        .navigationTitle("편지 내용")
+    }
 }

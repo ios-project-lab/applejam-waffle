@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct GoalHistoryDetailView: View {
+    var goal: Goal
     var body: some View {
-        NavigationLink(destination: LetterDetailView()){
-            Text("관련 편지 보기")
+        VStack(alignment: .leading, spacing: 12) {
+            Text(goal.title).font(.title2)
+            Text("설명: \(goal.description)")
+            Text("완료기한: \(goal.dueDate, style: .date)")
+            Spacer()
         }
+        .padding()
+        .navigationTitle("히스토리 상세")
     }
-}
-
-#Preview {
-    GoalHistoryDetailView()
 }

@@ -5,20 +5,19 @@
 //  Created by mac08 on 10/27/25.
 //
 
+// optional main content placeholder if Xcode created ContentView automatically
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        AuthView()
     }
 }
 
-#Preview {
-    GoalListView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
+
+

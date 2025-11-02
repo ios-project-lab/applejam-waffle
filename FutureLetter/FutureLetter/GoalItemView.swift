@@ -8,13 +8,19 @@
 import SwiftUI
 
 struct GoalItemView: View {
+    @EnvironmentObject var appState: AppState
+    var goal: Goal
+
     var body: some View {
-        NavigationLink(destination: GoalHistoryListView()){
-            Text("목표 히스토리 보기")
+        VStack(spacing: 12) {
+            Text(goal.title).font(.title2)
+            Text(goal.description).font(.body)
+            Text("기한: \(goal.dueDate, style: .date)")
+            Spacer()
         }
+        .padding()
+        .navigationTitle("목표 상세")
+        .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
     }
 }
 
-#Preview {
-    GoalItemView()
-}

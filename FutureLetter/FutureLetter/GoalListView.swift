@@ -9,22 +9,36 @@
 import SwiftUI
 
 struct GoalListView: View {
+    @EnvironmentObject var appState: AppState
+
     var body: some View {
-        NavigationView{
-            VStack{
-                
-                NavigationLink(destination: GoalHistoryDetailView()){
-                    Text("목표 히스토리 detail 보기")
+        NavigationView {
+            List {
+                ForEach(appState.goals) { goal in
+                    NavigationLink(destination: GoalItemView(goal: goal)) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(goal.title).font(.headline)
+                                Text(goal.description).font(.caption)
+                            }
+                            Spacer()
+                            Text(goal.dueDate, style: .date).font(.caption)
+                        }.padding(.vertical, 8)
+                    }
                 }
-                NavigationLink(destination: GoalItemView()){
-                    Text("목표 보기")
+                .onDelete { indexSet in
+                    appState.goals.remove(atOffsets: indexSet)
                 }
-                NavigationLink("편지 쓰기", destination: LetterComposeView())
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("나의 목표")
+            .toolbar {
+                NavigationLink(destination: SetGoalView()) {
+                    Image(systemName: "plus.circle.fill")
+                }
             }
         }
     }
 }
 
-#Preview {
-    GoalListView()
-}
+

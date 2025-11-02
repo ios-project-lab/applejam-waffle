@@ -8,11 +8,22 @@
 import SwiftUI
 
 struct BlockFriendsView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+    @EnvironmentObject var appState: AppState
 
-#Preview {
-    BlockFriendsView()
+    var body: some View {
+        List {
+            ForEach(appState.friends.filter { $0.blocked }) { f in
+                HStack {
+                    Text(f.displayName)
+                    Spacer()
+                    Button("해제") {
+                        if let idx = appState.friends.firstIndex(where: { $0.id == f.id }) {
+                            appState.friends[idx].blocked = false
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("차단한 친구")
+    }
 }

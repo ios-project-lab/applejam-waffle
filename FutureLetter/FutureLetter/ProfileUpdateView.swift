@@ -8,11 +8,30 @@
 import SwiftUI
 
 struct ProfileUpdateView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+    @EnvironmentObject var appState: AppState
+    @Environment(\.presentationMode) var presentationMode
+    @State private var displayName = ""
+    @State private var bio = ""
 
-#Preview {
-    ProfileUpdateView()
+    var body: some View {
+        VStack(spacing: 12) {
+            TextField("표시 이름", text: $displayName).textFieldStyle(.roundedBorder)
+            TextField("한 줄 소개", text: $bio).textFieldStyle(.roundedBorder)
+            Button {
+                if var u = appState.currentUser {
+                    u.displayName = displayName.isEmpty ? u.displayName : displayName
+                    u.bio = bio
+                    appState.currentUser = u
+                }
+                presentationMode.wrappedValue.dismiss()
+            } label: {
+                Text("저장").frame(maxWidth: .infinity).padding().background(Color.yellow).cornerRadius(8)
+            }
+            Spacer()
+        }.padding()
+        .onAppear {
+            displayName = appState.currentUser?.displayName ?? ""
+            bio = appState.currentUser?.bio ?? ""
+        }
+    }
 }

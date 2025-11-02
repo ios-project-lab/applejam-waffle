@@ -8,20 +8,32 @@
 import SwiftUI
 
 struct FriendListView: View {
+    @EnvironmentObject var appState: AppState
+
     var body: some View {
-        NavigationStack {
-            VStack {
-                Text("친구 목록")
-                    .font(.title)
-                    .padding()
-                Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-                List {
-                    NavigationLink("친구 검색", destination: FriendSearchView())
-                    NavigationLink("친구 현황", destination: FriendRequestsView())
+        NavigationView {
+            List {
+                Section {
+                    ForEach(appState.friends) { f in
+                        NavigationLink(destination: FriendProfileView(friend: f)) {
+                            FriendItemView(friend: f)
+                        }
+                    }
+                    .onDelete { idx in appState.friends.remove(atOffsets: idx) }
                 }
-                .navigationTitle("친구 목록")
+                Section {
+                    NavigationLink(destination: FriendRequestsView()) {
+                        Text("친구 요청 보기")
+                    }
+                    NavigationLink(destination: FriendSearchView()) {
+                        Text("친구 추가")
+                    }
+                    NavigationLink(destination: BlockFriendsView()) {
+                        Text("차단한 친구")
+                    }
+                }
             }
+            .navigationTitle("친구 리스트")
         }
-        .navigationTitle("친구")
     }
 }

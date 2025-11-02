@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct GoalHistoryItemView: View {
+    var goal: Goal
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(goal.title).bold()
+                Text(goal.description).font(.caption)
+            }
+            Spacer()
+            Text(goal.dueDate, style: .date)
+        }.padding(.vertical, 6)
     }
-}
-
-#Preview {
-    GoalHistoryItemView()
 }

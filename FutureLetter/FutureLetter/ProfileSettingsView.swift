@@ -8,14 +8,28 @@
 import SwiftUI
 
 struct ProfileSettingsView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        // 차단한 친구 보기
-        NavigationLink("친구 관리", destination: BlockFriendsView())
-        NavigationLink("로그아웃", destination: LoginView())
-    }
-}
+    @EnvironmentObject var appState: AppState
 
-#Preview {
-    ProfileSettingsView()
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("계정")) {
+                    Text("아이디: \(appState.currentUser?.username ?? "-")")
+                    Text("이름: \(appState.currentUser?.displayName ?? "-")")
+                    NavigationLink(destination: ProfileUpdateView()) {
+                        Text("프로필 수정")
+                    }
+                }
+                Section(header: Text("기타")) {
+                    NavigationLink(destination: GoalHistoryListView()) {
+                        Text("목표 히스토리 보기")
+                    }
+                    Button("로그아웃") {
+                        appState.currentUser = nil
+                    }
+                }
+            }
+            .navigationTitle("설정")
+        }
+    }
 }
