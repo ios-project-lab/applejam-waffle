@@ -24,13 +24,11 @@ struct HomeView: View {
                     Spacer()
                 }
 
-                // simple mock card
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.white)
                     .frame(height: 120)
-                    .overlay(Text("그래프 자리").foregroundColor(.black).font(.subheadline))
+                    .overlay(Text("그래프 삽입").foregroundColor(.black).font(.subheadline))
 
-                // quick access
                 HStack {
                     NavigationLink(destination: SetGoalView()) {
                         Text("목표 작성").padding().background(Color.white).cornerRadius(8)

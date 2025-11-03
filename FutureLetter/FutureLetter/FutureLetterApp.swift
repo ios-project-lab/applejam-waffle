@@ -14,12 +14,13 @@ struct FutureLetterApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if appState.isLoggedIn {
-                HomeView()
-                    .environmentObject(appState)
-            } else {
+            if appState.currentUser == nil{
                 LoginView()
                     .environmentObject(appState)
+            }else{
+                NavigationStack{
+                    TabBarView().environmentObject(appState)
+                }
             }
         }
     }
