@@ -13,7 +13,7 @@ struct SetGoalView: View {
 
     @State private var title = ""
     @State private var description = ""
-    @State private var dueDate = Date()
+    @State private var deadLine = Date()
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -30,7 +30,7 @@ struct SetGoalView: View {
             TextField("설명", text: $description)
                 .textFieldStyle(.roundedBorder)
 
-            DatePicker("완료 기한", selection: $dueDate, displayedComponents: .date)
+            DatePicker("완료 기한", selection: $deadLine, displayedComponents: .date)
                 .datePickerStyle(.compact)
 
             Button {
@@ -80,7 +80,7 @@ struct SetGoalView: View {
         // 날짜를 문자열로 변환
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: dueDate)
+        let dateString = dateFormatter.string(from: deadLine)
 
         // POST 데이터 구성
         let postString = "title=\(title)&description=\(description)&dueDate=\(dateString)"
@@ -119,7 +119,7 @@ struct SetGoalView: View {
                     alertMessage = "목표가 성공적으로 저장되었습니다!"
                     showAlert = true
                     // 서버 저장 후 로컬에도 추가
-                    let g = Goal(title: title, description: description, dueDate: dueDate)
+                    let g = Goal(title: title, description: description, deadLine: deadLine)
                     appState.goals.insert(g, at: 0)
                     presentationMode.wrappedValue.dismiss()
                 } else {

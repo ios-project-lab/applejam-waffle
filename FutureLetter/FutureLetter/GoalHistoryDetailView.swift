@@ -13,7 +13,7 @@ struct GoalHistoryDetailView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(goal.title).font(.title2)
             Text("설명: \(goal.description)")
-            Text("완료기한: \(goal.dueDate, style: .date)")
+            Text("완료기한: \(goal.deadLine, style: .date)")
             Spacer()
         }
         .padding()

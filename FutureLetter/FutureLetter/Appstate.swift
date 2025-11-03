@@ -5,7 +5,6 @@
 //  Created by mac07 on 11/2/25.
 //
 
-// 올라가야하는데
 import Foundation
 import SwiftUI
 
@@ -20,7 +19,7 @@ struct Goal: Identifiable {
     var id: String = UUID().uuidString
     var title: String
     var description: String
-    var dueDate: Date
+    var deadLine: Date
     var completed: Bool = false
 }
 
@@ -46,8 +45,8 @@ final class AppState: ObservableObject {
     @Published var isLoggedIn: Bool = false
 
     @Published var goals: [Goal] = [
-        Goal(title: "3주에 -4kg", description: "건강한 식단과 운동", dueDate: Date().addingTimeInterval(60*60*24*21)),
-        Goal(title: "일기 시작", description: "매일 1줄 기록", dueDate: Date().addingTimeInterval(60*60*24*30))
+        Goal(title: "3주에 -4kg", description: "건강한 식단과 운동", deadLine: Date().addingTimeInterval(60*60*24*21)),
+        Goal(title: "일기 시작", description: "매일 1줄 기록", deadLine: Date().addingTimeInterval(60*60*24*30))
     ]
     @Published var inbox: [Letter] = [
         Letter(from: "친구A", to: "나", subject: "안부", body: "잘 지내? 3주 플랜은 어때?", date: Date().addingTimeInterval(-60*60*24)),
