@@ -57,8 +57,6 @@ struct SignUpView: View {
     }
 
     func signUp() {
-        // 앱 상태에 저장
-        appState.currentUser = User(username: id, displayName: displayName.isEmpty ? id : displayName)
         
         // PHP 서버 연동
         guard let url = URL(string: "http://localhost:80/fletter/signup.php") else { return }
@@ -81,6 +79,7 @@ struct SignUpView: View {
             }
             if let data = data, let responseString = String(data: data, encoding: .utf8) {
                 print("서버 응답:", responseString)
+                presentationMode.wrappedValue.dismiss()
             }
         }.resume()
         
