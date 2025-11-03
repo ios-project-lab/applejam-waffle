@@ -38,5 +38,6 @@ struct SignUpView: View {
         }
         .padding()
         .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
+        .navigationTitle("회원가입")
     }
 }

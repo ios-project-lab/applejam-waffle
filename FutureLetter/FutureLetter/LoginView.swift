@@ -57,5 +57,6 @@ struct LoginView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .navigationTitle("로그인")
     }
 }
