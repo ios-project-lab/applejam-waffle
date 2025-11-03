@@ -12,10 +12,10 @@
     }
 
     $goal_title = isset($_POST['title']) ? $_POST['title'] : '';
-    $goal_description = isset($_POST['description']) ? $_POST['description'] : '';
-    $goal_due_date = isset($_POST['dueDate']) ? $_POST['dueDate'] : '';
+    // $goal_description = isset($_POST['description']) ? $_POST['description'] : '';
+    $goal_deadLine = isset($_POST['deadLine']) ? $_POST['deadLine'] : '';
 
-    $stmt = $conn->prepare("INSERT INTO $tableName (title, description, dueDate, categoryID) VALUES (?, ?, ?, 1)");
+    $stmt = $conn->prepare("INSERT INTO $tableName (title, deadLine) VALUES (?, ?)");
     
     if ($stmt) {
         $stmt->bind_param("sss", $goal_title, $goal_description, $goal_due_date); 

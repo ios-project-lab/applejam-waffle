@@ -16,7 +16,7 @@ struct GoalHistoryItemView: View {
                 Text(goal.description).font(.caption)
             }
             Spacer()
-            Text(goal.dueDate, style: .date)
+            Text(goal.deadLine, style: .date)
         }.padding(.vertical, 6)
     }
 }

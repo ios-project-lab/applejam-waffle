@@ -16,7 +16,7 @@ struct GoalHomeItemView: View {
                 Text(goal.description).font(.caption)
             }
             Spacer()
-            Text(goal.dueDate, style: .date).font(.caption2)
+            Text(goal.deadLine, style: .date).font(.caption2)
         }
         .padding(8)
         .background(Color.white)

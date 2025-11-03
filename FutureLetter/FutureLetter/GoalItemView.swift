@@ -15,7 +15,7 @@ struct GoalItemView: View {
         VStack(spacing: 12) {
             Text(goal.title).font(.title2)
             Text(goal.description).font(.body)
-            Text("기한: \(goal.dueDate, style: .date)")
+            Text("기한: \(goal.deadLine, style: .date)")
             Spacer()
         }
         .padding()
