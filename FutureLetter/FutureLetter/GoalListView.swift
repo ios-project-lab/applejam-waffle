@@ -1,11 +1,3 @@
-//
-//  GoalListView.swift
-//  FutureLetter
-//
-
-//  Created by Chaemin Yu on 10/27/25.
-//
-
 import SwiftUI
 
 struct GoalListView: View {
@@ -15,30 +7,49 @@ struct GoalListView: View {
         NavigationView {
             List {
                 ForEach(appState.goals) { goal in
-                    NavigationLink(destination: GoalItemView(goal: goal)) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(goal.title).font(.headline)
-                                Text(goal.description).font(.caption)
-                            }
-                            Spacer()
-                            Text(goal.dueDate, style: .date).font(.caption)
-                        }.padding(.vertical, 8)
-                    }
+                    GoalRowView(goal: goal)
                 }
-                .onDelete { indexSet in
-                    appState.goals.remove(atOffsets: indexSet)
-                }
+                .onDelete(perform: deleteGoal)
             }
             .listStyle(.insetGrouped)
             .navigationTitle("나의 목표")
             .toolbar {
-                NavigationLink(destination: SetGoalView()) {
-                    Image(systemName: "plus.circle.fill")
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: SetGoalView()) {
+                        Image(systemName: "plus.circle.fill")
+                            .imageScale(.large)
+                    }
                 }
             }
         }
     }
+
+    private func deleteGoal(at offsets: IndexSet) {
+        appState.goals.remove(atOffsets: offsets)
+    }
 }
 
+// 각 Row를 별도 View로 분리 (타입 추론 간소화)
+struct GoalRowView: View {
+    let goal: Goal
 
+    var body: some View {
+        NavigationLink(destination: GoalItemView(goal: goal)) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(goal.title)
+                        .font(.headline)
+                    Text(goal.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                // dueDate가 Date 타입일 때만 이렇게 사용
+                Text(goal.deadLine, style: .date)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            .padding(.vertical, 8)
+        }
+    }
+}
