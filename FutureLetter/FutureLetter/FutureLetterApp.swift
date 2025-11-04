@@ -23,8 +23,8 @@ struct FutureLetterApp: App {
                 }
             }
         }
-        WindowGroup{
-                ContentView().environmentObject(appState)
-        }
+//        WindowGroup{
+//                ContentView().environmentObject(appState)
+//        }
     }
 }

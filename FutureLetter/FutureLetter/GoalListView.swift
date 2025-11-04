@@ -15,7 +15,8 @@ struct GoalListView: View {
             .navigationTitle("나의 목표")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SetGoalView()) {
+                    NavigationLink(destination: SetGoalView()
+                            .environmentObject(appState) ) {
                         Image(systemName: "plus.circle.fill")
                             .imageScale(.large)
                     }

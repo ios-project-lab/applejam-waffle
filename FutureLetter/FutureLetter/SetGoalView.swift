@@ -132,9 +132,9 @@ struct SetGoalView: View {
                     }
                 } catch {
                     if let responseString = String(data: data, encoding: .utf8) {
-                        print("📦 서버 응답 원문:", responseString)
+                        print("서버 응답 원문:", responseString)
                     }
-                    print("❌ JSON 디코딩 실패:", error)
+                    print("JSON 디코딩 실패:", error)
                 }
 
             }.resume()
@@ -149,7 +149,7 @@ struct SetGoalView: View {
             return
         }
 
-        let url = URL(string: "http://localhost/SetGoal.php")!
+        let url = URL(string: "http://localhost/fletter/setgoal.php")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -158,9 +158,19 @@ struct SetGoalView: View {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: deadLine)
+        let currentUserId = UserDefaults.standard.integer(forKey: "currentUserPK")
+        print ("usersId: \(currentUserId)")
+        // optional 해제
+        guard let categoryId = selectedCategoryId else {
+            alertMessage = "카테고리를 선택해주세요."
+            showAlert = true
+            return
+        }
 
         // POST 데이터 구성
-        let postString = "title=\(title)&description=\(description)&dueDate=\(dateString)"
+        let postString = "usersId=\(currentUserId)&title=\(title)&description=\(description)&dueDate=\(dateString)&categoryId=\(categoryId)"
+        // Log
+        print ("서버로 전송: \(postString)")
 
         request.httpBody = postString.data(using: .utf8)
 
@@ -172,6 +182,7 @@ struct SetGoalView: View {
             }
 
             if let error = error {
+                // Log
                 print("요청 실패:", error)
                 DispatchQueue.main.async {
                     alertMessage = "서버 요청 실패: \(error.localizedDescription)"
@@ -197,8 +208,9 @@ struct SetGoalView: View {
                     showAlert = true
                     // 서버 저장 후 로컬에도 추가
                     let g = Goal(title: title, description: description, deadLine: deadLine)
-                    appState.goals.insert(g, at: 0)
+                    // appState.goals.insert(g, at: 0)
                     presentationMode.wrappedValue.dismiss()
+                    
                 } else {
                     alertMessage = "목표 저장에 실패했습니다. 다시 시도해주세요."
                     showAlert = true
