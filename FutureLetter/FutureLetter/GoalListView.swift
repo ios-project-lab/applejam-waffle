@@ -4,16 +4,18 @@ struct GoalListView: View {
     @StateObject var goalStore = GoalStore()
     @State private var categories: [GoalCategory] = [] // 서버에서 불러온 카테고리 목록
     @State private var selectedCategoryId: Int? // 현재 선택된 카테고리 ID
+    
+    private let goalService = GoalCategoryService()
 
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading) { // <--- categoriesView와 contentView를 수직으로 배치하기 위해 VStack 추가
+            VStack(alignment: .leading) {
                 categoriesView
                 contentView
             }
             .onAppear {
                 goalStore.loadGoalsFromServer()
-                fetchCategories()
+                loadCategories()
             }
             .background(Color.yellow.edgesIgnoringSafeArea(.top))
             .navigationTitle("나의 목표")
@@ -70,39 +72,12 @@ struct GoalListView: View {
             .padding(.vertical, 10)
         }
     }
-    // GET
-    // 뷰 내부에서 카테고리 데이터를 불러오는 함수
-        func fetchCategories() {
-            
-            guard let url = URL(string: "http://localhost/fletter/getcategories.php") else {
-                print("잘못된 URL")
-                return
+    // loadCategories 함수를 정의하여 서비스 호출
+    func loadCategories() {
+        goalService.fetchCategories{ decodedCategories in
+            DispatchQueue.main.async {
+                self.categories = decodedCategories
             }
-
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    print("카테고리 로드 요청 실패:", error)
-                    return
-                }
-
-                guard let data = data else {
-                    print("데이터 없음")
-                    return
-                }
-
-                do {
-                    let decodedCategories = try JSONDecoder().decode([GoalCategory].self, from: data)
-                    DispatchQueue.main.async {
-                        self.categories = decodedCategories
-                    }
-                } catch {
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        print("서버 응답 원문:", responseString)
-                    }
-                    print("JSON 디코딩 실패:", error)
-                }
-
-            }.resume()
         }
-    
+    }
 }

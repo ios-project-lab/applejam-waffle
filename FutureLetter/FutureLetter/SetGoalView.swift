@@ -17,6 +17,8 @@ struct SetGoalView: View {
     /** 반환을 위한 데이터들 */
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
+    
+    private let goalService = GoalCategoryService()
 
     @State private var title = ""
     @State private var description = ""
@@ -46,28 +48,7 @@ struct SetGoalView: View {
                 .datePickerStyle(.compact)
             Divider()
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                // categories 배열을 사용하여 버튼을 동적으로 생성합니다.
-                                ForEach(categories) { category in
-                                    Button(action: {
-                                        // 버튼 클릭 시 선택 상태 업데이트
-                                        selectedCategoryId = category.id
-                                    }) {
-                                        Text(category.name)
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(
-                                                // 선택된 카테고리에 따라 배경색 변경
-                                                category.id == selectedCategoryId ? Color.blue : Color.gray.opacity(0.3)
-                                            )
-                                            .foregroundColor(.white)
-                                            .cornerRadius(15)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
+                            categoriesView
                         }
                         .frame(height: 40) // 스크롤 뷰 높이 제한
 
@@ -101,48 +82,45 @@ struct SetGoalView: View {
             Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
         .onAppear { // 뷰가 로드될 때 카테고리 표시
-                    fetchCategories()
-                }
-    }
-    // GET
-    // 뷰 내부에서 카테고리 데이터를 불러오는 함수
-        func fetchCategories() {
-            
-            guard let url = URL(string: "http://localhost/fletter/getcategories.php") else {
-                print("잘못된 URL")
-                return
+                loadCategories()
             }
-
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    print("카테고리 로드 요청 실패:", error)
-                    return
-                }
-
-                guard let data = data else {
-                    print("데이터 없음")
-                    return
-                }
-
-                do {
-
-                    let decodedCategories = try JSONDecoder().decode([GoalCategory].self, from: data)
-                    DispatchQueue.main.async {
-                        self.categories = decodedCategories
-                        self.selectedCategoryId = decodedCategories.first?.id
-                    }
-                } catch {
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        print("서버 응답 원문:", responseString)
-                    }
-                    print("JSON 디코딩 실패:", error)
-                }
-
-            }.resume()
-        }
+    }
     
-    // POST
-
+    var categoriesView : some View {
+        HStack(spacing: 8) {
+            // categories 배열을 사용하여 버튼을 동적으로 생성합니다.
+            ForEach(categories) { category in
+                Button(action: {
+                    // 버튼 클릭 시 선택 상태 업데이트
+                    selectedCategoryId = category.id
+                }) {
+                    Text(category.name)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            // 선택된 카테고리에 따라 배경색 변경
+                            category.id == selectedCategoryId ? Color.blue : Color.gray.opacity(0.3)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(15)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    // loadCategories 함수를 정의하여 서비스 호출
+    func loadCategories() {
+        goalService.fetchCategories{ decodedCategories in
+            DispatchQueue.main.async {
+                self.categories = decodedCategories
+            }
+        }
+    }
+    
+    // Post
     func postGoalToServer() {
         guard !title.isEmpty, !description.isEmpty else {
             alertMessage = "모든 항목을 입력해주세요."
