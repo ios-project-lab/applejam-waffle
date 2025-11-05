@@ -5,6 +5,7 @@ struct GoalItem: Codable, Identifiable {
     var goalsId : Int = 0
     var title: String
     var category: String
+    var categoriesId: Int
     var description: String = "description ~~~~"
     var creationDate: Date
     var deadLine: Date

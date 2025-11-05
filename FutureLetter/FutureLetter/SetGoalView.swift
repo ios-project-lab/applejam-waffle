@@ -125,6 +125,7 @@ struct SetGoalView: View {
                 }
 
                 do {
+
                     let decodedCategories = try JSONDecoder().decode([GoalCategory].self, from: data)
                     DispatchQueue.main.async {
                         self.categories = decodedCategories
