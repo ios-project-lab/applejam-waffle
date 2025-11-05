@@ -7,9 +7,7 @@ struct GoalListView: View {
             // 전체 콘텐츠를 불러오는 로직을 별도의 컴퓨터 프로퍼티로 분리
             contentView
             .onAppear {
-                if goalStore.goals.isEmpty {
-                    goalStore.loadGoalsFromServer()
-                }
+                goalStore.loadGoalsFromServer()
             }
             .background(Color.yellow.edgesIgnoringSafeArea(.top))
             .navigationTitle("나의 목표")
