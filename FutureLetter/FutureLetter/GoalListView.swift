@@ -1,22 +1,36 @@
 import SwiftUI
 
 struct GoalListView: View {
-    @EnvironmentObject var appState: AppState
+    // 수정: AppState 대신 @State로 목표 목록을 직접 관리
+    // Todo: 서버 데이터 삽입
+    @State private var goals: [GoalItem] = [
+        // 초기 목표 데이터를 넣어 테스트
+        GoalItem(title: "와플 먹기", category: "습관", description: "맛있는 와플 먹기", creationDate: Date(), deadLine: Calendar.current.date(byAdding: .day, value: 7, to: Date())!, progress: 10),
+        GoalItem(title: "와플 먹기", category: "습관", description: "맛있는 와플 먹기", creationDate: Date(), deadLine: Calendar.current.date(byAdding: .day, value: 7, to: Date())!, progress: 10),
+        GoalItem(title: "와플 먹기", category: "습관", description: "맛있는 와플 먹기", creationDate: Date(), deadLine: Calendar.current.date(byAdding: .day, value: 7, to: Date())!, progress: 10)
+    ]
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(appState.goals) { goal in
-                    GoalRowView(goal: goal)
+            NavigationView {
+                ScrollView {
+                    LazyVStack(spacing: 15) {
+                        ForEach(goals) { goal in
+                            // NavigationLink로 감싸서 카드 전체를 탭 가능하게 함
+                            NavigationLink(destination: Text("Detail View Placeholder")) {
+                                GoalItemView(goal: goal)
+                            }
+                        
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding()
                 }
-                .onDelete(perform: deleteGoal)
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle("나의 목표")
+                .background(Color.yellow.edgesIgnoringSafeArea(.all)) // 배경색
+                .navigationTitle("나의 목표")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SetGoalView()
-                            .environmentObject(appState) ) {
+                
+                    NavigationLink(destination: SetGoalView()) { // 임시 Placeholder
                         Image(systemName: "plus.circle.fill")
                             .imageScale(.large)
                     }
@@ -25,32 +39,8 @@ struct GoalListView: View {
         }
     }
 
+    // 목표 삭제 함수는 @State 변수를 직접 변경합니다.
     private func deleteGoal(at offsets: IndexSet) {
-        appState.goals.remove(atOffsets: offsets)
-    }
-}
-
-// 각 Row를 별도 View로 분리 (타입 추론 간소화)
-struct GoalRowView: View {
-    let goal: Goal
-
-    var body: some View {
-        NavigationLink(destination: GoalItemView(goal: goal)) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(goal.title)
-                        .font(.headline)
-                    Text(goal.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                // dueDate가 Date 타입일 때만 이렇게 사용
-                Text(goal.deadLine, style: .date)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            .padding(.vertical, 8)
-        }
+        goals.remove(atOffsets: offsets)
     }
 }

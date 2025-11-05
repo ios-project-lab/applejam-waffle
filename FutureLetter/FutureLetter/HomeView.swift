@@ -50,11 +50,11 @@ struct HomeView: View {
                         }
                     }
                     Section(header: Text("내 목표")) {
-                        ForEach(appState.goals) { goal in
-                            NavigationLink(destination: GoalItemView(goal: goal)) {
-                                GoalHomeItemView(goal: goal)
-                            }
-                        }
+//                        ForEach(appState.goals) { goal in
+//                            NavigationLink(destination: GoalItemView(goal: goal)) {
+//                                GoalHomeItemView(goal: goal)
+//                            }
+//                        }
                     }
                 }
                 .listStyle(.insetGrouped)
