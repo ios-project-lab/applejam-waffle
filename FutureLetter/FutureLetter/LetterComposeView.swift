@@ -122,3 +122,4 @@ struct LetterComposeView: View {
         }.resume()
     }
 }
+
