@@ -8,18 +8,21 @@
 import SwiftUI
 
 struct GoalHomeItemView: View {
-    var goal: Goal
+    var goal: GoalItem
+    
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(goal.title).font(.subheadline).bold()
-                Text(goal.description).font(.caption)
+        
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(goal.title).font(.headline)
+                    Text("진행률 : \(goal.progress)%").font(.caption).foregroundStyle(.secondary)
+                    Text(goal.deadLine, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                }
+                Spacer()
             }
-            Spacer()
-            Text(goal.deadLine, style: .date).font(.caption2)
+            .padding(.vertical, 8)
         }
-        .padding(8)
-        .background(Color.white)
-        .cornerRadius(8)
-    }
 }
