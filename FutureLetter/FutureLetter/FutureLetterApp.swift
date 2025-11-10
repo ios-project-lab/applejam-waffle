@@ -12,6 +12,7 @@ import SwiftUI
 struct FutureLetterApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var goalStore = GoalStore()
+    @StateObject private var goalHistoryStore = GoalHistoryStore()
 
     var body: some Scene {
         WindowGroup {
@@ -20,9 +21,14 @@ struct FutureLetterApp: App {
                     .environmentObject(appState)
             }else{
                 NavigationStack{
-                    TabBarView().environmentObject(appState)
-                        .environmentObject(goalStore)
+                    TabBarView()
+//                        .environmentObject(appState)
+//                        .environmentObject(goalStore)
+//                        .environmentObject(goalHistoryStore)
                 }
+                .environmentObject(appState)
+                                .environmentObject(goalStore)
+                                .environmentObject(goalHistoryStore)
             }
         }
 //        WindowGroup{

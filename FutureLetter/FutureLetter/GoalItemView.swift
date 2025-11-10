@@ -54,7 +54,8 @@ struct GoalItemView: View {
                 Text("\(goal.progress)%")
             }
             
-            NavigationLink(destination: Text("\(goal.title) 히스토리 뷰")) {
+            NavigationLink(destination: GoalHistoryListView(goalsId: goal.goalsId)) { // 히스토리뷰로 목표 전달
+                
                 Text("히스토리 보기")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
