@@ -13,6 +13,7 @@ struct GoalItem: Codable, Identifiable {
     var completed: Bool = false
 
 }
+
 import SwiftUI
 
 struct GoalItemView: View {

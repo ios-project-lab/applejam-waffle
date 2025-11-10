@@ -9,6 +9,8 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var goalStore: GoalStore
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
@@ -42,26 +44,59 @@ struct HomeView: View {
                 }
 
                 List {
-                    Section(header: Text("최근 편지")) {
-                        ForEach(appState.inbox.prefix(3)) { letter in
-                            NavigationLink(destination: LetterDetailView(letter: letter)) {
-                                LetterItemView(letter: letter)
-                            }
-                        }
-                    }
-                    Section(header: Text("내 목표")) {
-//                        ForEach(appState.goals) { goal in
-//                            NavigationLink(destination: GoalItemView(goal: goal)) {
-//                                GoalHomeItemView(goal: goal)
-//                            }
-//                        }
-                    }
+                    RecentLettersSection()
+                    GoalsSection()
                 }
                 .listStyle(.insetGrouped)
             }
             .padding()
             .navigationTitle("홈")
             .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
+            .onAppear {
+                    // 로드 호출
+                    if goalStore.goals.isEmpty {
+                        goalStore.loadGoalsFromServer()
+                    }
+                }
         }
+    }
+}
+
+struct RecentLettersSection: View {
+    @EnvironmentObject var appState: AppState
+    
+    var body: some View {
+        Section(header: Text("최근 편지")) {
+            ForEach(Array(appState.inbox.prefix(3))) { letter in
+                NavigationLink(destination: LetterDetailView(letter: letter)) {
+                    LetterItemView(letter: letter)
+                }
+            }
+        }
+    }
+}
+
+struct GoalsSection: View {
+    @EnvironmentObject var goalStore: GoalStore
+
+    var body: some View {
+        Section {
+            ForEach(topSummaries) { goal in
+                NavigationLink {
+                    Text("\(goal.title) 상세 뷰")
+                } label: {
+                    GoalHomeItemView(goal:goal)
+                }
+                .buttonStyle(.plain)
+            }
+        } header: {
+            Text("내 목표")
+        }
+    }
+    private var topSummaries: [GoalItem] {
+        let sorted = goalStore.goals.sorted {
+            ($0.creationDate) > ($1.creationDate)
+        }
+        return Array(sorted.prefix(3))
     }
 }
