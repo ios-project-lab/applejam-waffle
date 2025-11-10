@@ -86,6 +86,7 @@ if ($result->num_rows > 0) {
             'goalsId' => (int)$row['goalsId'],
             'title' => $row['title'],
             'category' => $category_name, // 조회된 카테고리 이름 사용
+            'categoriesId' => (int)$row['categoriesId'],
             'description' => "데이터 없음 -- 논의 필요", // DB 컬럼이 없는 경우 대비
             // createdAt을 creationDate로 매핑하고 "yyyy-MM-dd" 형식으로 변환
             'creationDate' => date('Y-m-d', strtotime($row['createdAt'])), 
