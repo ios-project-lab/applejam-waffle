@@ -4,20 +4,28 @@
 //
 //  Created by Chaemin Yu on 10/27/25.
 //
-
 import SwiftUI
 
 struct GoalHistoryListView: View {
-    // Simple mock of history (reusing goals)
-    @EnvironmentObject var appState: AppState
+    
+    @EnvironmentObject var goalHistoryStore: GoalHistoryStore
+        let goalsId: Int   // GoalItemView에서 전달받은 목표 ID
+
     var body: some View {
         List {
-            ForEach(appState.goals) { g in
-                NavigationLink(destination: GoalHistoryDetailView(goal: g)) {
-                    GoalHistoryItemView(goal: g)
-                }
+            ForEach(goalHistoryStore.goalHistories, id:\.goalHistoriesId) { item in
+                GoalHistoryItemView(history: item)
+                
             }
         }
         .navigationTitle("목표 히스토리")
+        .task {
+            goalHistoryStore.loadGoalsFromServer(goalsId: goalsId)
+        }
+
     }
+            
+
 }
+
+

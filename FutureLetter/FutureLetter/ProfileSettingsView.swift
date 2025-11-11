@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfileSettingsView: View {
     @EnvironmentObject var appState: AppState
+    let goalsId : Int? = 0
 
     var body: some View {
         NavigationView {
@@ -21,9 +22,9 @@ struct ProfileSettingsView: View {
                     }
                 }
                 Section(header: Text("기타")) {
-                    NavigationLink(destination: GoalHistoryListView()) {
-                        Text("목표 히스토리 보기")
-                    }
+//                    NavigationLink(destination: GoalHistoryListView() {
+//                        Text("목표 히스토리 보기")
+//                    }
                     Button("로그아웃") {
                         appState.currentUser = nil
                     }
