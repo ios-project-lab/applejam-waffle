@@ -1,10 +1,3 @@
-//
-//  LetterItemView.swift
-//  FutureLetter
-//
-//  Created by Chaemin Yu on 10/27/25.
-//
-
 import SwiftUI
 
 struct LetterItemView: View {
