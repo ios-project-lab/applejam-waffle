@@ -5,6 +5,22 @@
 //  Created by 강채원 on 11/17/25.
 //
 
+/** 요청 예시
+ request: usersId(pk), lettersId(pk)
+ response: lettersId로 조회한 편지 상세 내역 1개
+ ex)
+ func loadLetter() {
+     letterService.getLetterByLettersId(
+         usersId: usersId,
+         lettersId: lettersId
+     ) { items in
+         DispatchQueue.main.async {
+             self.letterItem = items.first
+         }
+     }
+ }
+ 
+ */
 
 import Foundation
 
