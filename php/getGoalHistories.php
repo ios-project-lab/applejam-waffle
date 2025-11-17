@@ -1,5 +1,6 @@
 <?php
 // getGoals.php
+// 25.11.17 편지 아이디 조회 추가 by kcw
 
 // 1. 헤더 설정
 header('Content-Type: application/json');
@@ -33,7 +34,8 @@ $sql_history = "SELECT
                     content,
                     createadAt,
                     UpdatedAt,
-                    goalsId
+                    goalsId,
+                    lettersId
                 FROM GoalHistories
                 WHERE goalsId = ?";
 
@@ -56,6 +58,7 @@ if ($result->num_rows > 0) {
             'goalHistoriesId' => (int)$row['goalHistoryID'],
             'title' => $row['content'],
             'goalsId' => (int)$row['goalsId'],
+            'lettersId' => (int)$row['lettersId'],
             'createdAt' => date('Y-m-d', strtotime($row['createadAt'])),
             'updatedAt' => !empty($row['UpdatedAt']) 
                 ? date('Y-m-d', strtotime($row['UpdatedAt'])) 

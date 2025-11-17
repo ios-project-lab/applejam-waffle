@@ -15,6 +15,7 @@ struct GoalHistoryItem: Codable {
     var goalsId: Int = 0
     var createdAt: Date?
     var updatedAt: Date?
+    var lettersId: Int = 0
 
 }
 

@@ -26,4 +26,5 @@ select * from letters;
 
 describe Letters;
 
+INSERT INTO `FutureMe`.`letters` (`lettersId`, `title`, `content`, `expectedArrivalTime`, `isLocked`, `receiverType`, `isRead`, `senderId`, `receiverId`, `arrivedType`, `emotionsId`, `goalHistoriesId`, `parentLettersId`) VALUES ('1', '1', '1', '2025-01-01 10:00:00', '1', '1', '1', '9', '9', '1', '1', '1', '0');
 

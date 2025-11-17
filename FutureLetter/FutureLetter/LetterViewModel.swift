@@ -67,8 +67,8 @@ class LetterViewModel: ObservableObject {
         self.content = "테스트 본문 내용입니다."
         self.expectedArrivalTime = "2025-01-01 10:00:00"
         self.receiverType = 1
-        self.senderId = 6
-        self.receiverId = 6
+        self.senderId = 9
+        self.receiverId = 9
         self.arrivedType = 1
         self.emotionsId = 1
         self.parentLettersId = 15
