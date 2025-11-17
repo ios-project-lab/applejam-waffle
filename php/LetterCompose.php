@@ -1,10 +1,9 @@
 <?php
-//LetterCompose.php
+// LetterCompose.php
 
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json; charset=utf-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -15,69 +14,76 @@ $host = getenv('DB_HOST');
 $user = getenv('DB_USER');
 $pw = getenv('DB_PASSWORD');
 $dbName = getenv('DB_NAME');
-
+// MySQL 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
+
+// 연결 확인
 if ($conn->connect_error) {
-    echo json_encode(["error" => "CONNECTION_FAILED: " . $conn->connect_error]);
+    http_response_code(500);
+    die(json_encode(array("error" => "Database Connection failed: " . $conn->connect_error)));
+}
+
+$conn->set_charset("utf8");
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo "error: Invalid method. Use POST.";
     exit;
 }
 
-$senderId = $_POST['senderId'] ?? '';
-$receiverId = $_POST['receiverId'] ?? '';
-$title = $_POST['title'] ?? '';
-$content = $_POST['content'] ?? '';
-$expectedArrivalTime = $_POST['expectedArrivalTime'] ?? '';
+$senderId = $_POST["senderId"] ?? "";
+$receiverId = $_POST["receiverId"] ?? "";
+$title = $_POST["title"] ?? "";
+$content = $_POST["content"] ?? "";
+$receiveDateRaw = $_POST["receiveDate"] ?? "";
 
-// 0: 나에게, 1: 친구에게
-$receiverType = 0;
-$arrivedType = 1;
-$emotionsId = 1;
-$parentLettersId = 1;
-
-if (empty($senderId) || empty($receiverId) || empty($title) || empty($content) || empty($expectedArrivalTime)) {
-    echo json_encode(["error" => "VALIDATION_ERROR: Missing required fields."]);
+if ($senderId === "" || $receiverId === "" || $title === "" || $content === "") {
+    http_response_code(400);
+    echo "error: Missing required POST parameters.";
     exit;
 }
 
-$sql = "INSERT INTO Letters (
-    senderId, 
-    receiverId, 
-    title, 
-    content, 
-    expectedArrivalTime, 
-    receiverType,   
-    arrivedType,
-    emotionsId,
-    parentLettersId,
-    createdAt, 
-    updatedAt
-) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-if (!$stmt = $conn->prepare($sql)) {
-    echo json_encode(["error" => "PREPARE_FAILED: " . $conn->error]);
-    $conn->close();
-    exit;
+$expectedArrival = null;
+if ($receiveDateRaw !== "") {
+    $dt = DateTime::createFromFormat('Y-m-d H:i:s', $receiveDateRaw);
+    if ($dt !== false) {
+        $expectedArrival = $dt->format('Y-m-d H:i:s');
+    } else {
+        $parts = preg_split('/\s+/', $receiveDateRaw);
+        if (count($parts) >= 2) {
+            $expectedArrival = $parts[0] . " " . $parts[1];
+        }
+    }
 }
 
-$stmt->bind_param("iisssiiii",
-    $senderId,
-    $receiverId,
-    $title,
-    $content,
-    $expectedArrivalTime,
-    $receiverType,
-    $arrivedType,
-    $emotionsId,
-    $parentLettersId
+$expectedArrivalSQL = $expectedArrival ? "'" . $conn->real_escape_string($expectedArrival) . "'" : "NULL";
 
-);
+$createdAt = date('Y-m-d H:i:s');
+$updatedAt = $createdAt;
 
-if ($stmt->execute()) {
-    echo json_encode(["success" => "편지가 성공적으로 발송되었습니다."]);
+$titleEsc = $conn->real_escape_string($title);
+$contentEsc = $conn->real_escape_string($content);
+$senderEsc = intval($senderId);
+$receiverEsc = intval($receiverId);
+
+$sql = "
+INSERT INTO Letters (
+    title, content, senderId, receiverId, expectedArrivalTime,
+    createdAt, updatedAt, isLocked, isRead, isCheering,
+    receiverType, arrivedType, emotionsId, goalsHistorieId, parentLetterId
+) VALUES (
+    '{$titleEsc}', '{$contentEsc}', {$senderEsc}, {$receiverEsc}, {$expectedArrivalSQL},
+    '{$createdAt}', '{$updatedAt}', 0, 0, 0,
+    1, 1, NULL, NULL, NULL
+)
+";
+
+if ($conn->query($sql)) {
+    echo "success: letter created";
 } else {
-    echo json_encode(["error" => "편지 발송 실패: " . $stmt->error]);
+    http_response_code(500);
+    echo "error: " . $conn->error;
 }
 
-$stmt->close();
 $conn->close();
 ?>
