@@ -1,10 +1,3 @@
-//
-//  LetterInBoxView.swift
-//  FutureLetter
-//
-//  Created by Chaemin Yu on 10/27/25.
-//
-
 import SwiftUI
 
 struct LetterInBoxView: View {
@@ -24,8 +17,10 @@ struct LetterInBoxView: View {
             }
             .navigationTitle("편지함")
             .toolbar {
-                NavigationLink(destination: LetterComposeView()) {
-                    Image(systemName: "square.and.pencil")
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: LetterComposeView()) {
+                        Image(systemName: "square.and.pencil")
+                    }
                 }
             }
         }

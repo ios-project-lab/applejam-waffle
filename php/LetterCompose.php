@@ -1,69 +1,89 @@
 <?php
-    $host = getenv('DB_HOST');
-    $user = getenv('DB_USER');
-    $pw = getenv('DB_PASSWORD');
-    $dbName = getenv('DB_NAME');
+// LetterCompose.php
 
-    $conn = new mysqli($host, $user, $pw, $dbName);
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-    if ($conn->connect_error) {
-        die("error: Connection failed: " . $conn->connect_error);
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        
-        if (!empty($_POST)) {
-            
-            $to = $conn->real_escape_string($_POST['to'] ?? '');
-            $subject = $conn->real_escape_string($_POST['subject'] ?? '');
-            $bodyText = $conn->real_escape_string($_POST['bodyText'] ?? '');
-            $from = $conn->real_escape_string($_POST['from'] ?? '');
-            $receiveDate_raw = $_POST['receiveDate'] ?? '';
-            
-            $expected_arrive_time = null;
-            if (!empty($receiveDate_raw)) {
-                $date_parts = explode(' ', $receiveDate_raw);
-                $expected_arrive_time = $conn->real_escape_string($date_parts[0] . ' ' . $date_parts[1]);
-            }
+$host = getenv('DB_HOST');
+$user = getenv('DB_USER');
+$pw = getenv('DB_PASSWORD');
+$dbName = getenv('DB_NAME');
+// MySQL 연결
+$conn = new mysqli($host, $user, $pw, $dbName);
 
-            $createdAt = now();
-            $updatedAt = $createdAt;
-            $isLocked = 0;
-            $isRead = 0;
-            $isCheering = 0;
-            $receiverType = 1;
-            $arrivedType = 1;
-            $emotionsId = 'NULL';
-            $goalsHistorieId = 'NULL';
-            $parentLetterId = 'NULL';
+// 연결 확인
+if ($conn->connect_error) {
+    http_response_code(500);
+    die(json_encode(array("error" => "Database Connection failed: " . $conn->connect_error)));
+}
 
-            $sql = "INSERT INTO Letters (
-                        title, content, senderId, receiverId, expectedArrivalTime, 
-                        createdAt, updatedAt, isLocked, isRead, isCheering, 
-                        receiverType, arrivedType, emotionsId, goalsHistorieId, parentLetterId
-                    )  
-                    VALUES (
-                        '$subject', '$bodyText', '$from', '$to', " . ($expected_arrive_time ? "'$expected_arrive_time'" : "NULL") . ", 
-                        '$createdAt', '$updatedAt', '$isLocked', '$isRead', '$isCheering', 
-                        '$receiverType', '$arrivedType', $emotionsId, $goalsHistorieId, $parentLetterId
-                    )";
+$conn->set_charset("utf8");
 
-            if ($conn->query($sql) === TRUE) {
-                echo "success: New letter created successfully";
-            } else {
-                http_response_code(500);
-                echo "error: " . $sql . "<br>" . $conn->error;
-            }
-            
-        } else {
-            http_response_code(400);
-            echo "error: Missing required POST parameters.";
-        }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo "error: Invalid method. Use POST.";
+    exit;
+}
+
+$senderId = $_POST["senderId"] ?? "";
+$receiverId = $_POST["receiverId"] ?? "";
+$title = $_POST["title"] ?? "";
+$content = $_POST["content"] ?? "";
+$receiveDateRaw = $_POST["receiveDate"] ?? "";
+
+if ($senderId === "" || $receiverId === "" || $title === "" || $content === "") {
+    http_response_code(400);
+    echo "error: Missing required POST parameters.";
+    exit;
+}
+
+$expectedArrival = null;
+if ($receiveDateRaw !== "") {
+    $dt = DateTime::createFromFormat('Y-m-d H:i:s', $receiveDateRaw);
+    if ($dt !== false) {
+        $expectedArrival = $dt->format('Y-m-d H:i:s');
     } else {
-        http_response_code(405);
-        echo "error: Invalid request method. Use POST.";
+        $parts = preg_split('/\s+/', $receiveDateRaw);
+        if (count($parts) >= 2) {
+            $expectedArrival = $parts[0] . " " . $parts[1];
+        }
     }
+}
 
-    $conn->close();
+$expectedArrivalSQL = $expectedArrival ? "'" . $conn->real_escape_string($expectedArrival) . "'" : "NULL";
 
+$createdAt = date('Y-m-d H:i:s');
+$updatedAt = $createdAt;
+
+$titleEsc = $conn->real_escape_string($title);
+$contentEsc = $conn->real_escape_string($content);
+$senderEsc = intval($senderId);
+$receiverEsc = intval($receiverId);
+
+$sql = "
+INSERT INTO Letters (
+    title, content, senderId, receiverId, expectedArrivalTime,
+    createdAt, updatedAt, isLocked, isRead, isCheering,
+    receiverType, arrivedType, emotionsId, goalsHistorieId, parentLetterId
+) VALUES (
+    '{$titleEsc}', '{$contentEsc}', {$senderEsc}, {$receiverEsc}, {$expectedArrivalSQL},
+    '{$createdAt}', '{$updatedAt}', 0, 0, 0,
+    1, 1, NULL, NULL, NULL
+)
+";
+
+if ($conn->query($sql)) {
+    echo "success: letter created";
+} else {
+    http_response_code(500);
+    echo "error: " . $conn->error;
+}
+
+$conn->close();
 ?>
