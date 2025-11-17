@@ -12,9 +12,15 @@ struct LetterComposeView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    
+    private let viewModel = LetterViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
+            Button("AI 테스트 실행") {
+                viewModel.testAnalyze()
+            }
+            
             Text("편지 작성")
                 .font(.title2)
                 .bold()

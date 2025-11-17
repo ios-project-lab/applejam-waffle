@@ -10,40 +10,67 @@ import Foundation
 class AIService {
 
     func analyze(
-        lettersId: Int,
+        title: String,
+        content: String,
+        expectedArrivalTime: String,
+        receiverType: Int,
+        senderId: Int,
+        receiverId: Int,
+        arrivedType: Int,
+        emotionsId: Int,
+        goalHistoriesId: Int,
+        parentLettersId: Int,
         text: String,
         emotion: String,
         goal: String,
         completion: @escaping ([String: Any]?) -> Void
     ) {
 
-        guard let url = URL(string: "https://localhost/fletter/openai.php") else {
+        guard let url = URL(string: "http://localhost/fletter/openai.php") else {
+            print("❌ 잘못된 URL")
             completion(nil)
             return
         }
 
-        // PHP가 받을 body 형태
         let body: [String: Any] = [
-            "lettersId": lettersId,
+            "title": title,
+            "content": content,
+            "expectedArrivalTime": expectedArrivalTime,
+            "receiverType": receiverType,
+            "senderId": senderId,
+            "receiverId": receiverId,
+            "arrivedType": arrivedType,
+            "emotionsId": emotionsId,
+            "goalHistoriesId": goalHistoriesId,
+            "parentLettersId": parentLettersId,
             "text": text,
             "emotion": emotion,
             "goal": goal
         ]
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: req) { data, res, err in
 
-        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let err = err {
+                print("❌ 서버 요청 실패:", err.localizedDescription)
+                completion(nil)
+                return
+            }
+
             guard let data = data else {
+                print("❌ 데이터 없음")
                 completion(nil)
                 return
             }
 
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            print("📩 서버 응답:", json ?? [:])
             completion(json)
+
         }.resume()
     }
 }
