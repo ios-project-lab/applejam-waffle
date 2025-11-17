@@ -79,8 +79,27 @@ struct LetterComposeView: View {
             return
         }
         
+        print("DEBUG - Current User ID: \(currentUserID)")
+        print("DEBUG - Recipient (to): \(to)")
+        print("DEBUG - Friends list: \(appState.friends.map { "\($0.id):\($0.displayName)" })")
+        
+        // 받는 사람 찾기 (친구 목록에서)
         let receiverFriend = appState.friends.first(where: { $0.displayName == to })
-        let receiverUserID = receiverFriend?.id ?? (to == from ? currentUserID : "0")
+        
+        // receiverId 설정
+        let receiverUserID: String
+        if let friend = receiverFriend {
+            receiverUserID = friend.id
+            print("DEBUG - Found friend with ID: \(receiverUserID)")
+        } else if to == appState.currentUser?.displayName || to == from {
+            // 자신에게 보내는 경우
+            receiverUserID = currentUserID
+            print("DEBUG - Sending to self: \(receiverUserID)")
+        } else {
+            // 친구 목록에 없는 경우 - 에러 대신 currentUserID 사용 (임시)
+            receiverUserID = currentUserID
+            print("DEBUG - Recipient not found in friends, using current user ID: \(receiverUserID)")
+        }
 
         // 검증
         guard !to.trimmingCharacters(in: .whitespaces).isEmpty,
@@ -112,8 +131,10 @@ struct LetterComposeView: View {
             "receiverId": receiverUserID,
             "title": subject,
             "content": bodyText,
-            "receiveDate": receiveDateString
+            "expectedArrivalTime": receiveDateString // <--- 수정됨!
         ]
+        
+        print("DEBUG - POST Parameters: \(params)")
 
         let postString = params.map { key, value in
             let escapedKey = key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
