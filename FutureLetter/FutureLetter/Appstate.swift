@@ -38,7 +38,6 @@ struct Goal: Identifiable, Codable {
 struct Letter: Identifiable, Codable {
     let receiverNickName: String?
     let receiverId: Int?
-    
     let lettersId: Int
     let senderId: Int
     let senderNickName: String?
@@ -49,22 +48,15 @@ struct Letter: Identifiable, Codable {
     let isRead: Int
     let parentLettersId: Int
     let isLocked: Int
+    let replyCount: Int?
     
     enum CodingKeys: String, CodingKey {
-        case lettersId
-        case senderId
-        case senderNickName
-        case senderUserId
-        case title
-        case content
-        case expectedArrivalTime
-        case isRead
-        case parentLettersId
-        case isLocked
-        case receiverId
-        case receiverNickName = "receiverNickName"
+        case lettersId, senderId, senderNickName, senderUserId
+        case title, content, expectedArrivalTime
+        case isRead, parentLettersId, isLocked, receiverId, receiverNickName
+        case replyCount
     }
-
+    
     var id: Int { lettersId }
 
     var arrivalDate: Date {

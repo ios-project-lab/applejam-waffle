@@ -82,7 +82,7 @@ struct LetterDetailView: View {
                 }
             }
         }
-        .navigationTitle(letter.isActuallyLocked ? "배송 중" : "편지 내용")
+        .navigationTitle(letter.isActuallyLocked ? "발송 중" : "편지 내용")
         .sheet(isPresented: $showReply) {
             LetterComposeView(replyToLetter: letter)
         }
@@ -142,14 +142,13 @@ struct LetterDetailView: View {
             }
         }.resume()
     }
-    
-    // 답장 모양 디자인
+
     struct ReplyRow: View {
         var reply: Letter
         
         var body: some View {
             HStack(alignment: .top) {
-                Image(systemName: "arrow.turn.down.right") // 답장 아이콘
+                Image(systemName: "arrow.turn.down.right")
                     .foregroundColor(.gray)
                     .padding(.top, 5)
                 
@@ -162,12 +161,18 @@ struct LetterDetailView: View {
                             .font(.caption).foregroundColor(.gray)
                     }
                     
+                    Text(reply.title)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    
+                    // 답장 내용
                     Text(reply.content)
                         .font(.subheadline)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1)) // 회색 말풍선 배경
-                        .cornerRadius(8)
+                        .foregroundColor(.secondary)
                 }
+                .padding(10)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
             }
             .padding(.vertical, 4)
         }
