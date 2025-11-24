@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct GoalCategory: Codable, Identifiable {
-    let categoriesId: String // PHP 응답에 맞춰 String으로 받기
+    let categoriesId: String
     let name: String
     
-    // id를 Int로 사용하기 위해 변환
     var id: Int { Int(categoriesId) ?? 0 }
     
     enum CodingKeys: String, CodingKey {
@@ -12,47 +11,47 @@ struct GoalCategory: Codable, Identifiable {
         case name
     }
 }
+
 struct SetGoalView: View {
     
-    /** 반환을 위한 데이터들 */
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
     
     private let goalService = GoalCategoryService()
 
     @State private var title = ""
-    @State private var description = ""
     @State private var deadLine = Date()
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    // 카테고리 구조체
-    @State private var categories: [GoalCategory] = [] // 서버에서 불러온 카테고리 목록
-    @State private var selectedCategoryId: Int? // 현재 선택된 카테고리 ID
+    // 카테고리
+    @State private var categories: [GoalCategory] = []
+    @State private var selectedCategoryId: Int?
 
     var body: some View {
         VStack(spacing: 12) {
             
             Text("목표 작성")
                 .font(.title2)
-                .foregroundColor(.white)
+                .foregroundColor(.white) // 배경이 어두운 색이라 흰색 글씨
 
             TextField("제목", text: $title)
                 .textFieldStyle(.roundedBorder)
 
-            TextField("설명", text: $description)
-                .textFieldStyle(.roundedBorder)
-
             DatePicker("완료 기한", selection: $deadLine, displayedComponents: .date)
                 .datePickerStyle(.compact)
-            Divider()
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            categoriesView
-                        }
-                        .frame(height: 40) // 스크롤 뷰 높이 제한
+                .environment(\.colorScheme, .dark)
 
-                        Divider()
+            Divider()
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                categoriesView
+            }
+            .frame(height: 40)
+
+            Divider()
+            
             Button {
                 postGoalToServer()
             } label: {
@@ -77,21 +76,20 @@ struct SetGoalView: View {
             Spacer()
         }
         .padding()
-        .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
+        .background(Color("NavyBackground").edgesIgnoringSafeArea(.all)) // 네이비 배경
         .alert(isPresented: $showAlert) {
             Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
-        .onAppear { // 뷰가 로드될 때 카테고리 표시
-                loadCategories()
-            }
+        .onAppear {
+            loadCategories()
+        }
     }
     
+    // 카테고리 선택 뷰
     var categoriesView : some View {
         HStack(spacing: 8) {
-            // categories 배열을 사용하여 버튼을 동적으로 생성합니다.
             ForEach(categories) { category in
                 Button(action: {
-                    // 버튼 클릭 시 선택 상태 업데이트
                     selectedCategoryId = category.id
                 }) {
                     Text(category.name)
@@ -100,7 +98,6 @@ struct SetGoalView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(
-                            // 선택된 카테고리에 따라 배경색 변경
                             category.id == selectedCategoryId ? Color.blue : Color.gray.opacity(0.3)
                         )
                         .foregroundColor(.white)
@@ -111,7 +108,6 @@ struct SetGoalView: View {
         .padding(.horizontal)
     }
     
-    // loadCategories 함수를 정의하여 서비스 호출
     func loadCategories() {
         goalService.fetchCategories{ decodedCategories in
             DispatchQueue.main.async {
@@ -120,64 +116,53 @@ struct SetGoalView: View {
         }
     }
     
-    // Post
+    // 서버 전송
     func postGoalToServer() {
-        guard !title.isEmpty, !description.isEmpty else {
-            alertMessage = "모든 항목을 입력해주세요."
+        // description 검사 제거
+        guard !title.isEmpty else {
+            alertMessage = "제목을 입력해주세요."
             showAlert = true
             return
         }
-
-        let url = URL(string: "http://localhost/fletter/setgoal.php")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        // 날짜를 문자열로 변환
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: deadLine)
-        let currentUserId = UserDefaults.standard.integer(forKey: "currentUserPK")
-        print ("usersId: \(currentUserId)")
-        // optional 해제
+        
         guard let categoryId = selectedCategoryId else {
             alertMessage = "카테고리를 선택해주세요."
             showAlert = true
             return
         }
 
-        // POST 데이터 구성
-        let postString = "usersId=\(currentUserId)&title=\(title)&description=\(description)&dueDate=\(dateString)&categoryId=\(categoryId)"
-        // Log
-        print ("서버로 전송: \(postString)")
+        guard let url = URL(string: "http://localhost/fletter/setgoal.php") else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
+        // 날짜 변환
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: deadLine)
+        
+        // 현재 유저 ID
+        let currentUserId = appState.currentUser?.usersId ?? 0
+
+        let postString = "usersId=\(currentUserId)&title=\(title)&deadLine=\(dateString)&categoriesId=\(categoryId)"
+        
         request.httpBody = postString.data(using: .utf8)
 
         isLoading = true
 
         URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                isLoading = false
-            }
+            DispatchQueue.main.async { isLoading = false }
 
             if let error = error {
-                // Log
-                print("요청 실패:", error)
                 DispatchQueue.main.async {
-                    alertMessage = "서버 요청 실패: \(error.localizedDescription)"
+                    alertMessage = "요청 실패: \(error.localizedDescription)"
                     showAlert = true
                 }
                 return
             }
 
-            guard let data = data,
-                  let responseString = String(data: data, encoding: .utf8) else {
-                DispatchQueue.main.async {
-                    alertMessage = "서버 응답이 올바르지 않습니다."
-                    showAlert = true
-                }
-                return
-            }
+            guard let data = data, let responseString = String(data: data, encoding: .utf8) else { return }
 
             print("서버 응답:", responseString)
 
@@ -185,17 +170,30 @@ struct SetGoalView: View {
                 if responseString.contains("success") {
                     alertMessage = "목표가 성공적으로 저장되었습니다!"
                     showAlert = true
-                    // 서버 저장 후 로컬에도 추가
-                    let g = Goal(title: title, description: description, deadLine: deadLine)
-                    // appState.goals.insert(g, at: 0)
-                    presentationMode.wrappedValue.dismiss()
+                    
+                    let g = Goal(
+                        goalsId: 0,
+                        title: title,
+                        deadLine: dateString,
+                        createdAt: nil,
+                        updatedAt: nil,
+                        categoriesId: categoryId,
+                        usersId: currentUserId
+                    )
+                    
+                    // 리스트 맨 앞에 추가
+                    appState.goals.insert(g, at: 0)
+                    
+                    // 1초 뒤 닫기
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                     
                 } else {
-                    alertMessage = "목표 저장에 실패했습니다. 다시 시도해주세요."
+                    alertMessage = "저장 실패: \(responseString)"
                     showAlert = true
                 }
             }
         }.resume()
     }
 }
-

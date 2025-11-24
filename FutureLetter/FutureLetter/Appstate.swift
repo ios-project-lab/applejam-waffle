@@ -1,5 +1,5 @@
 //
-//  Appstate.swift
+//  AppState.swift
 //  FutureLetter
 //
 //  Created by mac07 on 11/2/25.
@@ -7,57 +7,95 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 struct User: Identifiable, Codable {
-    var id: String = UUID().uuidString
-    var username: String
-    var displayName: String
-    var bio: String?
+    let usersId: Int
+    let id: String
+    let nickName: String
+    let password: String?
+    let birthDay: String?
+    let gender: Int?
+    let userStatus: Int?
+    let profileImage: String?
+    let createdAt: String?
+    
+    var identifiableId: Int { usersId }
 }
 
-struct Goal: Identifiable {
-    var id: String = UUID().uuidString
-    var title: String
-    var description: String
-    var deadLine: Date
-    var completed: Bool = false
+struct Goal: Identifiable, Codable {
+    let goalsId: Int
+    let title: String
+    let deadLine: String
+    let createdAt: String?
+    let updatedAt: String?
+    let categoriesId: Int
+    let usersId: Int
+
+    var id: Int { goalsId }
 }
 
-struct Letter: Identifiable {
-    var id: String = UUID().uuidString
-    var from: String
-    var to: String
-    var subject: String
-    var body: String
-    var date: Date
-    var replied: Bool = false
+struct Letter: Identifiable, Codable {
+    let receiverNickName: String?
+    let receiverId: Int?
+    
+    let lettersId: Int
+    let senderId: Int
+    let senderNickName: String?
+    let senderUserId: String?
+    let title: String
+    let content: String
+    let expectedArrivalTime: String
+    let isRead: Int
+    let parentLettersId: Int
+    let isLocked: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case lettersId
+        case senderId
+        case senderNickName
+        case senderUserId
+        case title
+        case content
+        case expectedArrivalTime
+        case isRead
+        case parentLettersId
+        case isLocked
+        case receiverId
+        case receiverNickName = "receiverNickName"
+    }
+
+    var id: Int { lettersId }
+
+    var arrivalDate: Date {
+        let dateString = String(expectedArrivalTime.prefix(10))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        return formatter.date(from: dateString) ?? Date.distantFuture
+    }
+    
+    var isActuallyLocked: Bool {
+        let today = Calendar.current.startOfDay(for: Date())
+        let arrival = Calendar.current.startOfDay(for: arrivalDate)
+        return today < arrival
+    }
 }
 
-struct Friend: Identifiable {
-    var id: String = UUID().uuidString
-    var username: String
-    var displayName: String
+struct Friend: Identifiable, Codable {
+    let id: String
+    let displayName: String
+    let usersId: Int?
     var blocked: Bool = false
 }
+
 
 final class AppState: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoggedIn: Bool = false
-
-    @Published var goals: [Goal] = [
-        Goal(title: "3주에 -4kg", description: "건강한 식단과 운동", deadLine: Date().addingTimeInterval(60*60*24*21)),
-        Goal(title: "일기 시작", description: "매일 1줄 기록", deadLine: Date().addingTimeInterval(60*60*24*30))
-    ]
-    @Published var inbox: [Letter] = [
-        Letter(from: "친구A", to: "나", subject: "안부", body: "잘 지내? 3주 플랜은 어때?", date: Date().addingTimeInterval(-60*60*24)),
-        Letter(from: "나", to: "미래의 나", subject: "미래에게", body: "응원해!", date: Date())
-    ]
-    @Published var friends: [Friend] = [
-        Friend(username: "love_waffles", displayName: "Love_Waffles"),
-        Friend(username: "coffee_bae", displayName: "CoffeeBae")
-    ]
-    @Published var friendRequests: [Friend] = [
-        Friend(username: "new_friend", displayName: "NewFriend")
-    ]
+    @Published var goals: [Goal] = []
+    @Published var inbox: [Letter] = []
+    @Published var friends: [Friend] = []
+    @Published var friendRequests: [Friend] = []
 }
-

@@ -1,5 +1,5 @@
 <?php
-// getInbox.php
+// getReplies.php
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -23,10 +23,17 @@ if ($conn->connect_error) {
     die(json_encode(["error" => "DB Connection failed: " . $conn->connect_error]));
 }
 
-$userId = $_GET["userId"] ?? "";
-if ($userId === "") { echo json_encode(["error" => "missing userId"]); exit; }
-$userEsc = intval($userId);
+// 원본 편지의 ID를 받음
+$parentId = $_GET["parentId"] ?? "";
 
+if ($parentId === "") {
+    echo json_encode([]);
+    exit;
+}
+
+$parentIdEsc = intval($parentId);
+
+// 부모 ID가 일치하는 편지(답장)들을 가져옴
 $sql = "SELECT 
             L.lettersId, 
             L.senderId, 
@@ -38,14 +45,12 @@ $sql = "SELECT
             L.parentLettersId, 
             L.isLocked,
             L.createdAt,
-            IFNULL(S.nickName, '알수없음') as senderNickName,
-            IFNULL(R.nickName, '알수없음') as receiverNickName,  -- 👈 추가됨
-            IFNULL(S.id, '') as senderUserId
+            IFNULL(U.nickName, '알수없음') as senderNickName,
+            IFNULL(U.id, '') as senderUserId
         FROM Letters L 
-        LEFT JOIN Users S ON L.senderId = S.usersId 
-        LEFT JOIN Users R ON L.receiverId = R.usersId 
-        WHERE L.receiverId = $userEsc OR L.senderId = $userEsc 
-        ORDER BY L.expectedArrivalTime DESC";
+        LEFT JOIN Users U ON L.senderId = U.usersId 
+        WHERE L.parentLettersId = $parentIdEsc 
+        ORDER BY L.createdAt ASC";
 
 $result = $conn->query($sql);
 $list = array();
@@ -58,6 +63,7 @@ if ($result) {
         $row['isRead'] = (int)$row['isRead'];
         $row['parentLettersId'] = (int)$row['parentLettersId'];
         $row['isLocked'] = (int)$row['isLocked'];
+        
         $list[] = $row;
     }
 }

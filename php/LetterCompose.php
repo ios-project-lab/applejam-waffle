@@ -1,8 +1,8 @@
 <?php
-//LetterCompose.php
+// LetterCompose.php
 
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=utf-8");
 
@@ -17,67 +17,60 @@ $pw = getenv('DB_PASSWORD');
 $dbName = getenv('DB_NAME');
 
 $conn = new mysqli($host, $user, $pw, $dbName);
+$conn->set_charset("utf8");
+
 if ($conn->connect_error) {
-    echo json_encode(["error" => "CONNECTION_FAILED: " . $conn->connect_error]);
-    exit;
+    die(json_encode(["error" => "DB Connection failed: " . $conn->connect_error]));
 }
 
-$senderId = $_POST['senderId'] ?? '';
-$receiverId = $_POST['receiverId'] ?? '';
+$senderIntId = $_POST['senderId'] ?? '';
+$receiverStringId = $_POST['receiverId'] ?? '';
 $title = $_POST['title'] ?? '';
 $content = $_POST['content'] ?? '';
 $expectedArrivalTime = $_POST['expectedArrivalTime'] ?? '';
+$parentLettersId = $_POST['parentLettersId'] ?? 0;
 
-// 0: 나에게, 1: 친구에게
-$receiverType = 0;
-$arrivedType = 1;
-$emotionsId = 1;
-$parentLettersId = 1;
-
-if (empty($senderId) || empty($receiverId) || empty($title) || empty($content) || empty($expectedArrivalTime)) {
-    echo json_encode(["error" => "VALIDATION_ERROR: Missing required fields."]);
+if (empty($senderIntId) || empty($receiverStringId)) {
+    echo json_encode(["error" => "보내는 사람 또는 받는 사람 정보가 없습니다."]);
     exit;
 }
+
+$findUser = $conn->prepare("SELECT usersId FROM Users WHERE id = ?");
+$findUser->bind_param("s", $receiverStringId);
+$findUser->execute();
+$result = $findUser->get_result();
+$row = $result->fetch_assoc();
+
+if (!$row) {
+    echo json_encode(["error" => "받는 사람 아이디($receiverStringId)를 찾을 수 없습니다."]);
+    exit;
+}
+
+$receiverIntId = $row['usersId'];
+$receiverType = ($senderIntId == $receiverIntId) ? 0 : 1;
 
 $sql = "INSERT INTO Letters (
-    senderId, 
-    receiverId, 
-    title, 
-    content, 
-    expectedArrivalTime, 
-    receiverType,   
-    arrivedType,
-    emotionsId,
-    parentLettersId,
-    createdAt, 
-    updatedAt
-) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-if (!$stmt = $conn->prepare($sql)) {
-    echo json_encode(["error" => "PREPARE_FAILED: " . $conn->error]);
-    $conn->close();
-    exit;
-}
+    senderId, receiverId, title, content, expectedArrivalTime, 
+    receiverType, arrivedType, emotionsId, parentLettersId, 
+    createdAt, updatedAt, isRead, isLocked
+) VALUES (?, ?, ?, ?, ?, ?, 1, 1, ?, NOW(), NOW(), 0, 1)";
 
-$stmt->bind_param("iisssiiii",
-    $senderId,
-    $receiverId,
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("iisssii",
+    $senderIntId,
+    $receiverIntId,
     $title,
     $content,
     $expectedArrivalTime,
     $receiverType,
-    $arrivedType,
-    $emotionsId,
     $parentLettersId
-
 );
 
 if ($stmt->execute()) {
     echo json_encode(["success" => "편지가 성공적으로 발송되었습니다."]);
 } else {
-    echo json_encode(["error" => "편지 발송 실패: " . $stmt->error]);
+    echo json_encode(["error" => "DB 입력 실패: " . $stmt->error]);
 }
 
-$stmt->close();
 $conn->close();
 ?>

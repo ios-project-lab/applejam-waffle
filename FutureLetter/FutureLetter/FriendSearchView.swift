@@ -17,7 +17,7 @@ struct FriendSearchView: View {
             Button {
                 // Mock: add a friend with query
                 guard !query.isEmpty else { return }
-                let f = Friend(username: query, displayName: query)
+                let f = Friend(id: query, displayName: query, usersId: nil)
                 appState.friends.append(f)
                 query = ""
             } label: {

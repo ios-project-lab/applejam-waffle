@@ -15,8 +15,8 @@ struct ProfileSettingsView: View {
         NavigationView {
             Form {
                 Section(header: Text("계정")) {
-                    Text("아이디: \(appState.currentUser?.username ?? "-")")
-                    Text("이름: \(appState.currentUser?.displayName ?? "-")")
+                    Text("아이디: \(appState.currentUser?.id ?? "-")")
+                    Text("이름: \(appState.currentUser?.nickName ?? "-")")
                     NavigationLink(destination: ProfileUpdateView()) {
                         Text("프로필 수정")
                     }

@@ -20,6 +20,7 @@ struct SignUpView: View {
             
             TextField("ID", text: $id)
                 .textFieldStyle(.roundedBorder)
+                .autocapitalization(.none)
             
             SecureField("비밀번호", text: $pwd)
                 .textFieldStyle(.roundedBorder)
@@ -52,14 +53,12 @@ struct SignUpView: View {
             Spacer()
         }
         .padding()
-        .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
         .navigationTitle("회원가입")
     }
 
     func signUp() {
-        
-        // PHP 서버 연동
-        guard let url = URL(string: "http://localhost:80/fletter/signup.php") else { return }
+
+        guard let url = URL(string: "http://localhost/fletter/signup.php") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -69,7 +68,8 @@ struct SignUpView: View {
         let birthdayString = dateFormatter.string(from: birthday)
         
         let body = "id=\(id)&pwd=\(pwd)&displayName=\(displayName)&birthday=\(birthdayString)&gender=\(gender)"
-        request.httpBody = body.data(using: .utf8)
+
+        request.httpBody = body.data(using: String.Encoding.utf8)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -77,12 +77,19 @@ struct SignUpView: View {
                 print("회원가입 에러:", error)
                 return
             }
+            
             if let data = data, let responseString = String(data: data, encoding: .utf8) {
                 print("서버 응답:", responseString)
-                presentationMode.wrappedValue.dismiss()
+                
+                DispatchQueue.main.async {
+                    if responseString.contains("성공") {
+                        print("가입 성공! 화면을 닫습니다.")
+                        presentationMode.wrappedValue.dismiss()
+                    } else {
+                        print("가입 실패: DB 저장이 안되었습니다.")
+                    }
+                }
             }
         }.resume()
-        
-        presentationMode.wrappedValue.dismiss()
     }
 }

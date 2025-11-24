@@ -14,7 +14,7 @@ struct FriendProfileView: View {
     var body: some View {
         VStack(spacing: 12) {
             Text(friend.displayName).font(.title2)
-            Text("@\(friend.username)").foregroundColor(.secondary)
+            Text("@\(friend.id)").foregroundColor(.secondary)
             Spacer()
             Button(action: {
                 if let idx = appState.friends.firstIndex(where: { $0.id == friend.id }) {
