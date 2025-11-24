@@ -45,7 +45,6 @@ class LetterViewModel: ObservableObject {
             receiverId: receiverId,
             arrivedType: arrivedType,
             emotionsId: emotionsId,
-            goalHistoriesId: goalHistoriesId,
             parentLettersId: parentLettersId,
             text: text,
             emotion: userEmotion,
@@ -72,8 +71,7 @@ class LetterViewModel: ObservableObject {
         self.receiverId = 9
         self.arrivedType = 1
         self.emotionsId = 1
-        self.goalHistoriesId = 1
-        self.parentLettersId = 1
+        self.parentLettersId = 15
 
         // AI 분석용 데이터
         self.text = "이건 테스트용 편지입니다."

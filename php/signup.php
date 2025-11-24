@@ -11,18 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-//// DB 접속 정보
-//$host = getenv('DB_HOST');
-//$user = getenv('DB_USER');
-//$pw = getenv('DB_PASSWORD');
-//$dbName = getenv('DB_NAME');
 
-//$host = '124.56.5.77';
-//$user = 'brant';
-//$pw = '0505';
-//$dbName = 'FutureMe';
-
-include_once(./config.php);
+// DB 접속 정보
+include_once('./config.php');
 
 // POST 데이터 받기
 $id = $_POST['id'] ?? '';

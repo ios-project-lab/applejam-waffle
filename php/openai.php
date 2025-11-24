@@ -29,7 +29,6 @@ $senderId          = $input["senderId"] ?? 0;
 $receiverId        = $input["receiverId"] ?? 0;
 $arrivedType       = $input["arrivedType"] ?? 0;
 $emotionsId        = $input["emotionsId"] ?? 0;
-$goalHistoriesId   = $input["goalHistoriesId"] ?? 0;
 $parentLettersId   = $input["parentLettersId"] ?? 0;
 
 // AI 분석용 필드
@@ -108,16 +107,15 @@ INSERT INTO letters (
     receiverId,
     arrivedType,
     emotionsId,
-    goalHistoriesId,
     parentLettersId,
     aiCheering
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ";
 
 $stmt = $conn->prepare($sql);
 
 $stmt->bind_param(
-    "sssiiiiiiis",
+    "sssiiiiiis",
     $title,
     $content,
     $expectedArrivalTime,
@@ -126,7 +124,6 @@ $stmt->bind_param(
     $receiverId,
     $arrivedType,
     $emotionsId,
-    $goalHistoriesId,
     $parentLettersId,
     $aiContent
 );
