@@ -16,10 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 //$pw = getenv('DB_PASSWORD');
 //$dbName = getenv('DB_NAME');
 
-$host = 'localhost';
-$user = 'brant';
-$pw = '0505';
-$dbName = 'FutureMe';
+include_once(./config.php);
 
 $conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");

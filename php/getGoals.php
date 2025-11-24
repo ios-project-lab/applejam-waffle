@@ -1,15 +1,18 @@
 <?php
 // getGoals.php
 
-// 1. 헤더 설정
+// 헤더 설정
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); 
 
-// 2. 데이터베이스 연결 설정 (getenv 사용 유지)
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pw = getenv('DB_PASSWORD');
-$dbName = getenv('DB_NAME');
+// 데이터베이스 연결 설정
+//$host = getenv('DB_HOST');
+//$user = getenv('DB_USER');
+//$pw = getenv('DB_PASSWORD');
+//$dbName = getenv('DB_NAME');
+
+include_once(./config.php);
+
 // MySQL 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
 
@@ -27,22 +30,22 @@ if ($user_id == 0) {
     die(json_encode(array("error" => "Required parameter 'userId' is missing or invalid.")));
 }
 
-// --- 카테고리 이름 조회를 위한 PreparedStatement 준비 ---
+
 $sql_category = "SELECT name FROM Categories WHERE categoriesId = ?";
 $category_stmt = $conn->prepare($sql_category);
-// --- 프로세스 계산 준비 ---
+
 $sql_process = "SELECT sum(progressRate) as totalProgress FROM GoalHistories WHERE goalsId = ?";
 $process_stmt = $conn->prepare($sql_process);
-// 4. 목표 데이터 조회 (SQL Injection 방지를 위해 PreparedStatement 사용)
+// 목표 데이터 조회 (SQL Injection 방지를 위해 PreparedStatement 사용)
 $sql = "SELECT 
             goalsId, 
             title, 
             deadLine, 
             createdAt, 
             categoriesId
-            -- description,   -- ⭐️ GoalItem 구조체와 일치하도록 컬럼 추가 가정
-            -- progress,      -- ⭐️ GoalItem 구조체와 일치하도록 컬럼 추가 가정
-            -- completed      -- ⭐️ GoalItem 구조체와 일치하도록 컬럼 추가 가정
+            -- description,   -- GoalItem 구조체와 일치하도록 컬럼 추가 가정
+            -- progress,      -- GoalItem 구조체와 일치하도록 컬럼 추가 가정
+            -- completed      -- GoalItem 구조체와 일치하도록 컬럼 추가 가정
         FROM Goals 
         WHERE usersId = ?";
 
@@ -53,14 +56,13 @@ $result = $stmt->get_result();
 
 $goals = array();
 
-// 5. 결과 처리 및 배열 저장
+// 결과 처리 및 배열 저장
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
         
         $category_name = "미분류"; // 기본값
         
-        // 5-1. 카테고리 이름 조회 로직
-        // $row['categoriesId']는 Goals 테이블에서 조회된 현재 목표의 카테고리 ID입니다.
+        // 카테고리 이름 조회 로직
         $category_stmt->bind_param("i", $row['categoriesId']); 
         $category_stmt->execute();
         $category_result = $category_stmt->get_result();
@@ -81,7 +83,7 @@ if ($result->num_rows > 0) {
         $completed = ($total_progress >= 100) ? true : false;
 
 
-        // 5-2. Swift의 GoalItem 구조체에 맞춰 배열에 저장
+        // Swift의 GoalItem 구조체에 맞춰 배열에 저장
         $goals[] = array(
             'goalsId' => (int)$row['goalsId'],
             'title' => $row['title'],
@@ -97,10 +99,10 @@ if ($result->num_rows > 0) {
     }
 }
 
-// 6. 최종 JSON 응답 출력
+// JSON 응답 출력
 echo json_encode($goals);
 
-// 7. 연결 종료
+// 연결 종료
 $stmt->close();
 $category_stmt->close();
 $process_stmt->close();

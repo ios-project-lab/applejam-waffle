@@ -30,7 +30,7 @@ struct LetterDetailView: View {
                 // 열린 상태 (내용 + 답장)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        // 1. 원본 편지 헤더
+                        // 원본 편지 헤더
                         HStack {
                             Text(letter.title).font(.largeTitle).bold()
                             Spacer()
@@ -44,7 +44,7 @@ struct LetterDetailView: View {
                         }
                         Divider()
                         
-                        // 2. 원본 편지 내용
+                        // 원본 편지 내용
                         Text(letter.content)
                             .font(.body)
                             .lineSpacing(6)
@@ -52,7 +52,7 @@ struct LetterDetailView: View {
                         
                         Divider()
                         
-                        // 3. 답장 목록 (댓글처럼 표시)
+                        // 답장 목록 (댓글처럼 표시)
                         if !replies.isEmpty {
                             Text("답장 (\(replies.count))")
                                 .font(.headline)
@@ -82,7 +82,7 @@ struct LetterDetailView: View {
                 }
             }
         }
-        .navigationTitle(letter.isActuallyLocked ? "배송 중" : "편지 내용")
+        .navigationTitle(letter.isActuallyLocked ? "발송 중" : "편지 내용")
         .sheet(isPresented: $showReply) {
             LetterComposeView(replyToLetter: letter)
         }
@@ -126,7 +126,7 @@ struct LetterDetailView: View {
             
             guard let data = data else { return }
             
-            // 1. 서버가 준 원본 데이터 확인
+            // 서버가 준 원본 데이터 확인
             if let rawString = String(data: data, encoding: .utf8) {
                 print("[답장 원본 데이터]: \(rawString)")
             }
@@ -142,14 +142,13 @@ struct LetterDetailView: View {
             }
         }.resume()
     }
-    
-    // 답장 모양 디자인
+
     struct ReplyRow: View {
         var reply: Letter
         
         var body: some View {
             HStack(alignment: .top) {
-                Image(systemName: "arrow.turn.down.right") // 답장 아이콘
+                Image(systemName: "arrow.turn.down.right")
                     .foregroundColor(.gray)
                     .padding(.top, 5)
                 
@@ -162,12 +161,18 @@ struct LetterDetailView: View {
                             .font(.caption).foregroundColor(.gray)
                     }
                     
+                    Text(reply.title)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    
+                    // 답장 내용
                     Text(reply.content)
                         .font(.subheadline)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1)) // 회색 말풍선 배경
-                        .cornerRadius(8)
+                        .foregroundColor(.secondary)
                 }
+                .padding(10)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
             }
             .padding(.vertical, 4)
         }

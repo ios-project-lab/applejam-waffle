@@ -57,15 +57,14 @@ struct LetterReplyView: View {
     func sendReplyToServer() {
         guard let myUser = appState.currentUser else { return }
         
-        // 1. 서버 주소 설정 (본인 IP로 변경)
+        // 서버 주소 설정
         guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
-        // 2. 답장 데이터 구성
-        // 답장은 바로 도착
+        // 답장 데이터 구성
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let nowStr = formatter.string(from: Date())
@@ -80,7 +79,7 @@ struct LetterReplyView: View {
         
         isLoading = true
         
-        // 3. 전송
+        // 전송
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async { isLoading = false }
             
@@ -91,7 +90,6 @@ struct LetterReplyView: View {
                     if responseStr.contains("success") {
                         alertMessage = "답장이 전송되었습니다!"
                         showAlert = true
-                        // 잠시 후 닫기
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                             presentationMode.wrappedValue.dismiss()
                         }
