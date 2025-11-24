@@ -1,15 +1,18 @@
 <?php
 // getGoals.php
 
-// 1. 헤더 설정
+// 헤더 설정
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); 
 
-// 2. 데이터베이스 연결 설정 (getenv 사용 유지)
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pw = getenv('DB_PASSWORD');
-$dbName = getenv('DB_NAME');
+// 데이터베이스 연결
+//$host = getenv('DB_HOST');
+//$user = getenv('DB_USER');
+//$pw = getenv('DB_PASSWORD');
+//$dbName = getenv('DB_NAME');
+
+include_once(./config.php);
+
 // MySQL 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
 
@@ -19,7 +22,7 @@ if ($conn->connect_error) {
     die(json_encode(array("error" => "Database Connection failed: " . $conn->connect_error)));
 }
 
-// 3. 사용자 ID (userId) 가져오기
+// 사용자 ID (userId) 가져오기
 $user_id = isset($_GET['userId']) ? (int)$_GET['userId'] : 0;
 $letter_id = isset($_GET['letterId']) ? (int)$_GET['letterId'] : 0;
 
@@ -33,7 +36,7 @@ if ($letter_id == 0) {
     die(json_encode(array("error" => "Required parameter 'letterId' is missing or invalid.")));
 }
 
-// 4. 목표 데이터 조회 (SQL Injection 방지를 위해 PreparedStatement 사용)
+// 목표 데이터 조회 (SQL Injection 방지를 위해 PreparedStatement 사용)
 $sql = "SELECT 
             lettersId,
             title, 
@@ -60,7 +63,7 @@ $result = $stmt->get_result();
 
 $response = array();
 
-// 5. 결과 처리 및 배열 저장
+// 결과 처리 및 배열 저장
 while($row = $result->fetch_assoc()) {
 
     $response[] = [
@@ -82,10 +85,10 @@ while($row = $result->fetch_assoc()) {
     ];
 }
 
-// 6. 최종 JSON 응답 출력
+// JSON 응답 출력
 echo json_encode($response);
 
-// 7. 연결 종료
+// 연결 종료
 $stmt->close();
 $conn->close();
 

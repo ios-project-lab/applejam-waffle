@@ -1,13 +1,15 @@
 <?php
-// ... (DB 접속 및 연결 로직은 유지)
+
 // DB 접속 정보
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pw = getenv('DB_PASSWORD');
-$dbName = getenv('DB_NAME');
+//$host = getenv('DB_HOST');
+//$user = getenv('DB_USER');
+//$pw = getenv('DB_PASSWORD');
+//$dbName = getenv('DB_NAME');
+
+include_once(./config.php);
 
 // 응답 헤더를 미리 JSON으로 설정
-header('Content-Type: application/json; charset=utf-8'); // ⚠️ charset=utf-8 추가
+header('Content-Type: application/json; charset=utf-8');
 
 // 데이터베이스 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
@@ -36,9 +38,7 @@ if ($result->num_rows > 0) {
     }
 }
 
-// 🚨 핵심 수정: JSON_UNESCAPED_UNICODE 플래그 사용
-// 이 플래그는 한글을 유니코드로 이스케이프하지 않고 그대로 출력하게 합니다.
-echo json_encode($categories, JSON_UNESCAPED_UNICODE); // ⚠️ 플래그 추가
+echo json_encode($categories, JSON_UNESCAPED_UNICODE);
 
 $conn->close();
 ?>

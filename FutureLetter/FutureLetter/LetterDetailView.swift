@@ -30,7 +30,7 @@ struct LetterDetailView: View {
                 // 열린 상태 (내용 + 답장)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        // 1. 원본 편지 헤더
+                        // 원본 편지 헤더
                         HStack {
                             Text(letter.title).font(.largeTitle).bold()
                             Spacer()
@@ -44,7 +44,7 @@ struct LetterDetailView: View {
                         }
                         Divider()
                         
-                        // 2. 원본 편지 내용
+                        // 원본 편지 내용
                         Text(letter.content)
                             .font(.body)
                             .lineSpacing(6)
@@ -52,7 +52,7 @@ struct LetterDetailView: View {
                         
                         Divider()
                         
-                        // 3. 답장 목록 (댓글처럼 표시)
+                        // 답장 목록 (댓글처럼 표시)
                         if !replies.isEmpty {
                             Text("답장 (\(replies.count))")
                                 .font(.headline)
@@ -126,7 +126,7 @@ struct LetterDetailView: View {
             
             guard let data = data else { return }
             
-            // 1. 서버가 준 원본 데이터 확인
+            // 서버가 준 원본 데이터 확인
             if let rawString = String(data: data, encoding: .utf8) {
                 print("[답장 원본 데이터]: \(rawString)")
             }
