@@ -11,9 +11,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C86B8B852ED3CFF200AE8B48 /* Exceptions for "FutureLetter" folder in "FutureLetter" target */ = {
+		C825FDDC2ED426CD004532EE /* Exceptions for "FutureLetter" folder in "FutureLetter" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Assets.xcassets,
 				Info.plist,
 			);
 			target = D831D0F92EAF1ECB00C40B68 /* FutureLetter */;
@@ -24,7 +25,7 @@
 		D831D0FC2EAF1ECB00C40B68 /* FutureLetter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C86B8B852ED3CFF200AE8B48 /* Exceptions for "FutureLetter" folder in "FutureLetter" target */,
+				C825FDDC2ED426CD004532EE /* Exceptions for "FutureLetter" folder in "FutureLetter" target */,
 			);
 			path = FutureLetter;
 			sourceTree = "<group>";

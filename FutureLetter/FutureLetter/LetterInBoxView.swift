@@ -12,6 +12,15 @@ struct LetterInBoxView: View {
     // 내 유저 ID
     var myId: Int { appState.currentUser?.usersId ?? 0 }
 
+    // 받을 예정 (잠김 & 내가 받음)
+    var futureLetters: [Letter] {
+        letters.filter {
+            $0.isActuallyLocked &&   // 잠김
+            $0.receiverId == myId && // 내가 받음
+            $0.parentLettersId == 0  // 원본만
+        }
+    }
+    
     // 받은 편지 (도착함 & 내가 받음)
     var receivedLetters: [Letter] {
         letters.filter {
@@ -35,15 +44,6 @@ struct LetterInBoxView: View {
     var sentLetters: [Letter] {
         letters.filter {
             $0.senderId == myId &&   // 내가 보냄
-            $0.parentLettersId == 0  // 원본만
-        }
-    }
-
-    // 받을 예정 (잠김 & 내가 받음)
-    var futureLetters: [Letter] {
-        letters.filter {
-            $0.isActuallyLocked &&   // 잠김
-            $0.receiverId == myId && // 내가 받음
             $0.parentLettersId == 0  // 원본만
         }
     }
