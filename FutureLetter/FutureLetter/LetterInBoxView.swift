@@ -3,6 +3,7 @@ import SwiftUI
 struct LetterInBoxView: View {
     @EnvironmentObject var appState: AppState
     @State private var letters: [Letter] = []
+    @State private var replies: [Letter] = []
     @State private var isLoading = false
     
     // 탭 상태 (0: 받은 편지, 1: 보낸 편지, 2: 받을 예정)
@@ -105,7 +106,7 @@ struct LetterInBoxView: View {
                             }
                         }
                         
-                        // --- 탭 3: 받을 예정 (잠김) ---
+                        // 탭 3: 받을 예정 (잠김)
                         else {
                             if futureLetters.isEmpty {
                                 Text("도착 예정인 편지가 없습니다.").foregroundColor(.gray)
@@ -129,8 +130,7 @@ struct LetterInBoxView: View {
     
     func fetchInbox() {
         guard let userId = appState.currentUser?.usersId else { return }
-        
-        // [본인 IP 또는 localhost]
+
         let urlString = "http://localhost/fletter/getInbox.php?userId=\(userId)"
         guard let url = URL(string: urlString) else { return }
         

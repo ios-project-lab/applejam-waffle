@@ -18,7 +18,7 @@ struct ProfileUpdateView: View {
             TextField("표시 이름", text: $nickName).textFieldStyle(.roundedBorder)
             
             Button {
-                if var u = appState.currentUser {
+                if let u = appState.currentUser {
                     let newNickName = nickName.isEmpty ? u.nickName : nickName
                     
                     appState.currentUser = User(

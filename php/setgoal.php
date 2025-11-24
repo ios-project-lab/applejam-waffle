@@ -20,11 +20,11 @@ if ($conn->connect_error) {
 // Swift에서 보낸 POST 키 이름을 사용
 $usersId = $_POST['usersId'] ?? 0;        // Swift에서 보낸 usersId (PK)
 $title = $_POST['title'] ?? '';
-$deadLine = $_POST['dueDate'] ?? '';
-$categoryId = $_POST['categoryId'] ?? 0; 
+$deadLine = $_POST['deadLine'] ?? '';
+$categoriesId = $_POST['categoriesId'] ?? 0; 
 
 // 입력값 검증 (필요한 경우 추가)
-if (empty($title) || $usersId == 0 || $categoryId == 0) {
+if (empty($title) || $usersId == 0 || $categoriesId == 0) {
     echo json_encode(["error" => "필수 입력 항목(제목, 사용자 ID, 카테고리)이 누락되었습니다."]);
     $conn->close();
     exit();
@@ -39,7 +39,7 @@ $stmt = $conn->prepare($sql);
 
 // 변수 바인딩: s=string, i=integer
 // (title: string, deadLine: string, categoriesId: integer, usersId: integer)로 가정
-$stmt->bind_param("ssii", $title, $deadLine, $categoryId, $usersId);
+$stmt->bind_param("ssii", $title, $deadLine, $categoriesId, $usersId);
 
 if ($stmt->execute()) {
     echo json_encode(["success" => "목표가 성공적으로 저장되었습니다."]);

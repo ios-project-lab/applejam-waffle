@@ -11,10 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pw = getenv('DB_PASSWORD');
-$dbName = getenv('DB_NAME');
+//$host = getenv('DB_HOST');
+//$user = getenv('DB_USER');
+//$pw = getenv('DB_PASSWORD');
+//$dbName = getenv('DB_NAME');
+
+include_once(./config.php);
 
 $conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");
@@ -38,13 +40,12 @@ $sql = "SELECT
             L.parentLettersId, 
             L.isLocked,
             L.createdAt,
-            IFNULL(S.nickName, '알수없음') as senderNickName,
-            IFNULL(R.nickName, '알수없음') as receiverNickName,  -- 👈 추가됨
-            IFNULL(S.id, '') as senderUserId
+            IFNULL(U.nickName, '알수없음') as senderNickName,
+            IFNULL(U.id, '') as senderUserId,
+            (SELECT COUNT(*) FROM Letters WHERE parentLettersId = L.lettersId) as replyCount
         FROM Letters L 
-        LEFT JOIN Users S ON L.senderId = S.usersId 
-        LEFT JOIN Users R ON L.receiverId = R.usersId 
-        WHERE L.receiverId = $userEsc OR L.senderId = $userEsc 
+        LEFT JOIN Users U ON L.senderId = U.usersId 
+        WHERE (L.receiverId = $userEsc OR L.senderId = $userEsc) 
         ORDER BY L.expectedArrivalTime DESC";
 
 $result = $conn->query($sql);
@@ -58,6 +59,8 @@ if ($result) {
         $row['isRead'] = (int)$row['isRead'];
         $row['parentLettersId'] = (int)$row['parentLettersId'];
         $row['isLocked'] = (int)$row['isLocked'];
+        $row['replyCount'] = (int)$row['replyCount'];
+        
         $list[] = $row;
     }
 }
