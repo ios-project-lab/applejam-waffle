@@ -6,7 +6,7 @@
 //	$pw = getenv('DB_PASSWORD');
 //	$dbName = getenv('DB_NAME');
 
-    include_once(./config.php);
+    include_once('./config.php');
 	
 	$conn = new mysqli($host, $user, $pw, $dbName);
 

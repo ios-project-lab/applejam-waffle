@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 //$pw = '0505';
 //$dbName = 'FutureMe';
 
-include_once(./config.php);
+include_once('./config.php');
 
 // POST 데이터 받기
 $id = $_POST['id'] ?? '';

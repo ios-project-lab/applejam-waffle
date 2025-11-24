@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 //$pw = getenv('DB_PASSWORD');
 //$dbName = getenv('DB_NAME');
 
-include_once(./config.php);
+include_once('./config.php');
 
 // 데이터 받기
 $id = $_POST['id'] ?? '';

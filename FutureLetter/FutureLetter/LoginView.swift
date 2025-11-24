@@ -86,7 +86,7 @@ struct LoginView: View {
     }
 
     func login() {
-        guard let url = URL(string: "http://localhost/fletter/login.php") else { return }
+        guard let url = URL(string: "http://124.56.5.77/fletter/login.php") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

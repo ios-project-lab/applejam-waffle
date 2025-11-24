@@ -5,7 +5,7 @@
 //$pw = getenv('DB_PASSWORD');
 //$dbName = getenv('DB_NAME');
 
-include_once(./config.php);
+include_once('./config.php');
 
 // 응답 헤더 설정
 header('Content-Type: application/json');
