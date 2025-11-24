@@ -5,7 +5,7 @@ class GoalStore: ObservableObject {
     @Published var goals: [GoalItem] = []
     @Published var isLoading: Bool = false
     
-        private let baseURLString = "http://localhost/fletter/getGoals.php"
+        private let baseURLString = "http://124.56.5.77/fletter/getGoals.php"
         private var currentUserId: Int {
             return UserDefaults.standard.integer(forKey: "currentUserPK")
         }
