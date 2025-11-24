@@ -5,7 +5,6 @@
 	$user = getenv('DB_USER');
 	$pw = getenv('DB_PASSWORD');
 	$dbName = getenv('DB_NAME');
-	
 	$conn = new mysqli($host, $user, $pw, $dbName);
 
  	if(!$conn){

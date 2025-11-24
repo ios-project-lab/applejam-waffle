@@ -11,10 +11,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pw = getenv('DB_PASSWORD');
-$dbName = getenv('DB_NAME');
+//$host = getenv('DB_HOST');
+//$user = getenv('DB_USER');
+//$pw = getenv('DB_PASSWORD');
+//$dbName = getenv('DB_NAME');
+
+$host = 'localhost';
+$user = 'brant';
+$pw = '0505';
+$dbName = 'FutureMe';
 
 $conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");
