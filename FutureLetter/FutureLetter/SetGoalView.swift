@@ -144,6 +144,7 @@ struct SetGoalView: View {
         
         // 현재 유저 ID
         let currentUserId = appState.currentUser?.usersId ?? 0
+        
 
         let postString = "usersId=\(currentUserId)&title=\(title)&deadLine=\(dateString)&categoriesId=\(categoryId)"
         
