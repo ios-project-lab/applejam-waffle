@@ -1,11 +1,11 @@
 <?php
-// ReadLetter.php
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json; charset=utf-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
@@ -13,33 +13,31 @@ $host = getenv('DB_HOST');
 $user = getenv('DB_USER');
 $pw = getenv('DB_PASSWORD');
 $dbName = getenv('DB_NAME');
-// MySQL 연결
-$conn = new mysqli($host, $user, $pw, $dbName);
 
-// 연결 확인
-if ($conn->connect_error) {
-    http_response_code(500);
-    die(json_encode(array("error" => "Database Connection failed: " . $conn->connect_error)));
-    
+$conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");
 
 $lettersId = $_POST["lettersId"] ?? "";
 
 if ($lettersId === "") {
-    http_response_code(400);
-    echo "error: missing lettersId";
+    echo json_encode(["error" => "missing lettersId"]);
     exit;
 }
 
 $idEsc = intval($lettersId);
 
-// mark as read
+// 1. 읽음 처리 (isRead = 1)
 $conn->query("UPDATE Letters SET isRead=1 WHERE lettersId=$idEsc");
 
-$sql = "SELECT * FROM Letters WHERE lettersId = $idEsc";
-$result = $conn->query($sql);
+// 2. 편지 상세 정보 리턴
+$result = $conn->query("SELECT * FROM Letters WHERE lettersId = $idEsc");
+$letterData = $result->fetch_assoc();
 
-echo json_encode($result->fetch_assoc(), JSON_UNESCAPED_UNICODE);
+if ($letterData) {
+    echo json_encode($letterData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+} else {
+    echo json_encode(["error" => "Letter not found"]);
+}
 
 $conn->close();
 ?>

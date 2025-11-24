@@ -14,7 +14,7 @@ struct FriendItemView: View {
             Circle().frame(width: 44, height: 44).overlay(Text(String(friend.displayName.prefix(1))))
             VStack(alignment: .leading) {
                 Text(friend.displayName).bold()
-                Text("@\(friend.username)").font(.caption).foregroundColor(.secondary)
+                Text("@\(friend.id)").font(.caption).foregroundColor(.secondary)
             }
             Spacer()
             if friend.blocked { Text("차단됨").font(.caption).foregroundColor(.red) }

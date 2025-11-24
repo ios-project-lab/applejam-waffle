@@ -3,186 +3,136 @@ import SwiftUI
 struct LetterComposeView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
-
-    @State private var to = ""
-    @State private var from = ""
+    
+    var replyToLetter: Letter? = nil
+    
+    @State private var receiverIdInput: String = ""
+    @State private var sendType = 0 // 0: 나, 1: 친구
+    @State private var title = ""
+    @State private var content = ""
     @State private var receiveDate = Date()
-    @State private var subject = ""
-    @State private var bodyText = ""
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    private let viewModel = LetterViewModel()
-
     var body: some View {
-        VStack(spacing: 12) {
-            Button("AI 테스트 실행") {
-                viewModel.testAnalyze()
-            }
-            
-            Text("편지 작성")
-                .font(.title2)
-                .bold()
-
-            TextField("받는 사람", text: $to)
-                .textFieldStyle(.roundedBorder)
-
-            TextField("보내는 사람", text: $from)
-                .textFieldStyle(.roundedBorder)
-
-            DatePicker("받는 날짜", selection: $receiveDate, displayedComponents: .date)
-                .datePickerStyle(.compact)
-
-            TextField("제목", text: $subject)
-                .textFieldStyle(.roundedBorder)
-
-            TextEditor(text: $bodyText)
-                .frame(height: 200)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.3))
-                )
-
-            Button {
-                postLetterToServer()
-            } label: {
-                HStack {
-                    if isLoading { ProgressView().scaleEffect(0.8) }
-                    Text("보내기")
+        NavigationView {
+            VStack {
+                Form {
+                    Section(header: Text("받는 사람")) {
+                        if let original = replyToLetter {
+                            Text("To: \(original.senderNickName ?? "알 수 없음") (답장)")
+                                .foregroundColor(.gray)
+                        } else {
+                            Picker("대상", selection: $sendType) {
+                                Text("미래의 나").tag(0)
+                                Text("친구").tag(1)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            
+                            if sendType == 1 {
+                                TextField("친구 아이디 입력", text: $receiverIdInput)
+                                    .autocapitalization(.none)
+                            }
+                        }
+                    }
+                    
+                    Section(header: Text("도착 예정일")) {
+                        DatePicker("언제 도착할까요?", selection: $receiveDate, in: Date()..., displayedComponents: [.date])
+                        Text("설정된 날짜까지 편지는 잠김 상태가 됩니다.")
+                            .font(.caption).foregroundColor(.gray)
+                    }
+                    
+                    Section(header: Text("편지 내용")) {
+                        TextField("제목", text: $title)
+                        TextEditor(text: $content).frame(height: 200)
+                    }
                 }
-                .frame(maxWidth: .infinity)
+                
+                Button {
+                    sendLetter()
+                } label: {
+                    HStack {
+                        if isLoading { ProgressView() }
+                        Text("편지 보내기").bold()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.yellow)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
+                .disabled(isLoading)
                 .padding()
-                .background(Color.yellow)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                
+                Spacer().frame(height: 20)
             }
-            .disabled(isLoading)
-
-            Spacer()
-        }
-        .padding()
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
-        }
-        .onAppear {
-            if from.isEmpty {
-                from = appState.currentUser?.displayName ?? "나"
+            .navigationTitle(replyToLetter == nil ? "편지 쓰기" : "답장 쓰기")
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
             }
         }
     }
-
-    func postLetterToServer() {
-        guard let currentUserID = appState.currentUser?.id else {
-            alertMessage = "로그인 정보가 없습니다. 다시 로그인해주세요."
-            showAlert = true
-            return
-        }
+    
+    func sendLetter() {
+        guard let myUser = appState.currentUser else { return }
         
-        print("DEBUG - Current User ID: \(currentUserID)")
-        print("DEBUG - Recipient (to): \(to)")
-        print("DEBUG - Friends list: \(appState.friends.map { "\($0.id):\($0.displayName)" })")
+        let finalReceiverId: String
         
-        // 받는 사람 찾기 (친구 목록에서)
-        let receiverFriend = appState.friends.first(where: { $0.displayName == to })
-        
-        // receiverId 설정
-        let receiverUserID: String
-        if let friend = receiverFriend {
-            receiverUserID = friend.id
-            print("DEBUG - Found friend with ID: \(receiverUserID)")
-        } else if to == appState.currentUser?.displayName || to == from {
-            // 자신에게 보내는 경우
-            receiverUserID = currentUserID
-            print("DEBUG - Sending to self: \(receiverUserID)")
+        // 받는 사람 아이디 결정
+        if let original = replyToLetter {
+            // 답장: 원본 보낸 사람의 ID 사용 (우선순위: userId > nickName)
+            finalReceiverId = original.senderUserId ?? original.senderNickName ?? ""
         } else {
-            // 친구 목록에 없는 경우 - 에러 대신 currentUserID 사용 (임시)
-            receiverUserID = currentUserID
-            print("DEBUG - Recipient not found in friends, using current user ID: \(receiverUserID)")
+            // 나(0) 또는 친구(1)
+            if sendType == 0 {
+                finalReceiverId = myUser.id
+            } else {
+                if receiverIdInput.isEmpty {
+                    alertMessage = "받는 사람 아이디를 입력해주세요."
+                    showAlert = true; return
+                }
+                finalReceiverId = receiverIdInput
+            }
         }
-
-        // 검증
-        guard !to.trimmingCharacters(in: .whitespaces).isEmpty,
-              !subject.trimmingCharacters(in: .whitespaces).isEmpty,
-              !bodyText.trimmingCharacters(in: .whitespaces).isEmpty,
-              !from.trimmingCharacters(in: .whitespaces).isEmpty else {
-            alertMessage = "모든 항목을 입력해주세요."
-            showAlert = true
-            return
+        
+        if title.isEmpty || content.isEmpty {
+            alertMessage = "제목과 내용을 입력해주세요."
+            showAlert = true; return
         }
-
-        guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else {
-            alertMessage = "잘못된 서버 URL입니다."
-            showAlert = true
-            return
-        }
-
+        
+        guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded; charset=utf-8", forHTTPHeaderField: "Content-Type")
-
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let receiveDateString = dateFormatter.string(from: receiveDate)
-
-        let params: [String: String] = [
-            "senderId": currentUserID,
-            "receiverId": receiverUserID,
-            "title": subject,
-            "content": bodyText,
-            "expectedArrivalTime": receiveDateString // <--- 수정됨!
-        ]
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
-        print("DEBUG - POST Parameters: \(params)")
-
-        let postString = params.map { key, value in
-            let escapedKey = key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            let escapedValue = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            return "\(escapedKey)=\(escapedValue)"
-        }.joined(separator: "&")
-
-        request.httpBody = postString.data(using: .utf8)
-
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let dateStr = formatter.string(from: receiveDate)
+        let parentId = replyToLetter?.lettersId ?? 0
+        
+        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)"
+        
+        request.httpBody = body.data(using: .utf8)
         isLoading = true
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
-
-            if let error = error {
+            DispatchQueue.main.async { isLoading = false }
+            if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                print("서버응답: \(responseString)")
                 DispatchQueue.main.async {
-                    self.alertMessage = "서버 요청 실패: \(error.localizedDescription)"
-                    self.showAlert = true
-                }
-                return
-            }
-
-            guard let data = data, let responseString = String(data: data, encoding: .utf8) else {
-                DispatchQueue.main.async {
-                    self.alertMessage = "서버 응답이 올바르지 않습니다."
-                    self.showAlert = true
-                }
-                return
-            }
-
-            print("서버 응답: \(responseString)")
-
-            DispatchQueue.main.async {
-                if responseString.lowercased().contains("success") {
-                    self.alertMessage = "편지가 성공적으로 작성되었습니다!"
-                    self.showAlert = true
-
-                    let newLetter = Letter(from: self.from, to: self.to, subject: self.subject, body: self.bodyText, date: self.receiveDate)
-                    self.appState.inbox.insert(newLetter, at: 0)
-                    self.presentationMode.wrappedValue.dismiss()
-                } else {
-                    self.alertMessage = "편지 작성에 실패했습니다. 서버 응답: \(responseString)"
-                    self.showAlert = true
+                    if responseString.contains("success") {
+                        alertMessage = "발송 성공!"
+                        showAlert = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    } else {
+                        alertMessage = "실패: \(responseString)"
+                        showAlert = true
+                    }
                 }
             }
         }.resume()
     }
 }
-

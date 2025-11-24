@@ -4,52 +4,103 @@ struct LetterReplyView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
 
-    // original 변수는 변경이 불가능하지만, 식별자(id)를 통해 appState.inbox에서 찾아 업데이트할 수 있습니다.
-    var original: Letter
+    var original: Letter // 원본 편지
     @State private var bodyText = ""
+    @State private var isLoading = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("답장하기").font(.title2)
-            Text("제목: \(original.subject)").font(.caption)
+            Text("답장하기").font(.title2).bold()
+            
+            // 원본 편지 정보 표시
+            HStack {
+                Text("To. \(original.senderNickName ?? "알 수 없음")")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Spacer()
+            }
+            .padding(.horizontal)
 
             TextEditor(text: $bodyText)
                 .frame(height: 200)
-                .overlay(RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray.opacity(0.3)))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.3))
+                )
+                .padding(.horizontal)
 
             Button {
-                // 1. 새 답장 편지 생성
-                let reply = Letter(
-                    from: appState.currentUser?.displayName ?? "나",
-                    to: original.from,
-                    subject: "RE: \(original.subject)",
-                    body: bodyText,
-                    date: Date(),
-                    replied: false
-                )
-
-                // 2. 새 답장 편지를 inbox에 추가
-                appState.inbox.insert(reply, at: 0)
-                
-                // 3. 원본 편지의 replied 상태 업데이트
-                if let index = appState.inbox.firstIndex(where: { $0.id == original.id }) {
-                    appState.inbox[index].replied = true
-                }
-                
-                // 4. 뷰 닫기
-                presentationMode.wrappedValue.dismiss()
+                sendReplyToServer()
             } label: {
-                Text("보내기")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.yellow)
-                    .cornerRadius(8)
-                    .foregroundColor(.white)
+                HStack {
+                    if isLoading { ProgressView() }
+                    Text("답장 보내기")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.yellow)
+                .cornerRadius(8)
+                .foregroundColor(.white)
+            }
+            .disabled(isLoading)
+            .padding()
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
             }
 
             Spacer()
         }
-        .padding()
+    }
+    
+    func sendReplyToServer() {
+        guard let myUser = appState.currentUser else { return }
+        
+        // 1. 서버 주소 설정 (본인 IP로 변경)
+        guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        // 2. 답장 데이터 구성
+        // 답장은 바로 도착
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let nowStr = formatter.string(from: Date())
+        
+        let receiverTarget = original.senderNickName ?? ""
+        
+        let title = "RE: \(original.title)"
+        
+        let body = "senderId=\(myUser.usersId)&receiverId=\(receiverTarget)&title=\(title)&content=\(bodyText)&expectedArrivalTime=\(nowStr)&parentLettersId=\(original.lettersId)"
+        
+        request.httpBody = body.data(using: String.Encoding.utf8)
+        
+        isLoading = true
+        
+        // 3. 전송
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async { isLoading = false }
+            
+            if let data = data, let responseStr = String(data: data, encoding: .utf8) {
+                print("답장 응답: \(responseStr)")
+                
+                DispatchQueue.main.async {
+                    if responseStr.contains("success") {
+                        alertMessage = "답장이 전송되었습니다!"
+                        showAlert = true
+                        // 잠시 후 닫기
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    } else {
+                        alertMessage = "전송 실패: \(responseStr)"
+                        showAlert = true
+                    }
+                }
+            }
+        }.resume()
     }
 }
