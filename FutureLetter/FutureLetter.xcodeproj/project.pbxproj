@@ -10,22 +10,9 @@
 		D831D0FA2EAF1ECB00C40B68 /* FutureLetter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FutureLetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D032BD872ED4247C0030A92E /* Exceptions for "FutureLetter" folder in "FutureLetter" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = D831D0F92EAF1ECB00C40B68 /* FutureLetter */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D831D0FC2EAF1ECB00C40B68 /* FutureLetter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D032BD872ED4247C0030A92E /* Exceptions for "FutureLetter" folder in "FutureLetter" target */,
-			);
 			path = FutureLetter;
 			sourceTree = "<group>";
 		};
@@ -67,7 +54,6 @@
 			buildPhases = (
 				D831D0F62EAF1ECB00C40B68 /* Sources */,
 				D831D0F72EAF1ECB00C40B68 /* Frameworks */,
-				D831D0F82EAF1ECB00C40B68 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -116,16 +102,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		D831D0F82EAF1ECB00C40B68 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D831D0F62EAF1ECB00C40B68 /* Sources */ = {
