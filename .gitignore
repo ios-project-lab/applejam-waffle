@@ -3,3 +3,8 @@ FutureLetter/.DS_Store
 
 # db sql
 db-scripts
+
+*.xcuserstate
+xcuserdata/
+xcdebugger/
+
