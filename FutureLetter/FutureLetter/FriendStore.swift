@@ -13,7 +13,7 @@ class FriendStore : ObservableObject {
     @Published var isLoading: Bool = false
     // Todo: 배포 url로 수정
     // http://124.56.5.77/
-    private let baseURLString = "http://localhost/fletter/loadFriendsList.php"
+    private let baseURLString = "http://124.56.5.77/fletter/loadFriendsList.php"
     private var currentUserId: Int {
         return UserDefaults.standard.integer(forKey: "currentUserPK")
     }

@@ -49,7 +49,7 @@ class FriendService {
     func loadFriendRequests(currentUserId: Int, completion: @escaping (Result<FriendRequestResponse, Error>) -> Void) {
 
         // 1) URL → URLComponents로 변환
-        guard var urlComponents = URLComponents(string: "http://localhost/fletter/loadFriendRequests.php") else {
+        guard var urlComponents = URLComponents(string: "http://124.56.5.77/fletter/loadFriendRequests.php") else {
             completion(.failure(URLError(.badURL)))
             return
         }
