@@ -7,17 +7,30 @@
 
 import SwiftUI
 
+struct FriendItem: Codable {
+
+    var friendsId : Int = 0
+    var receiverId : Int = 0
+    var nickName: String
+    var friendStatusName: String
+    var createdAt: Date?
+    var updatedAt: Date?
+    var isBlocked: Bool = false
+
+}
+
 struct FriendItemView: View {
-    var friend: Friend
+    var friend: FriendItem
     var body: some View {
         HStack {
-            Circle().frame(width: 44, height: 44).overlay(Text(String(friend.displayName.prefix(1))))
+
             VStack(alignment: .leading) {
-                Text(friend.displayName).bold()
-                Text("@\(friend.id)").font(.caption).foregroundColor(.secondary)
+                Text(friend.nickName).bold()
+                Text("@\(friend.friendsId)").font(.caption).foregroundColor(.secondary)
+                Text(friend.friendStatusName).bold()
             }
             Spacer()
-            if friend.blocked { Text("차단됨").font(.caption).foregroundColor(.red) }
+            if friend.isBlocked { Text("차단됨").font(.caption).foregroundColor(.red) }
         }.padding(.vertical, 6)
     }
 }

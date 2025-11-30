@@ -1,39 +1,41 @@
-//
-//  FriendListView.swift
-//  FutureLetter
-//
-//  Created by Chaemin Yu on 10/27/25.
-//
-
 import SwiftUI
-
 struct FriendListView: View {
-    @EnvironmentObject var appState: AppState
+    @StateObject var friendStore = FriendStore()
 
     var body: some View {
-        NavigationView {
-            List {
-                Section {
-                    ForEach(appState.friends) { f in
-                        NavigationLink(destination: FriendProfileView(friend: f)) {
-                            FriendItemView(friend: f)
-                        }
-                    }
-                    .onDelete { idx in appState.friends.remove(atOffsets: idx) }
+        List {
+            // 상단 섹션은 그대로 유지
+            Section {
+                NavigationLink(destination: FriendRequestsView()) {
+                    Text("친구 요청 보기")
                 }
-                Section {
-                    NavigationLink(destination: FriendRequestsView()) {
-                        Text("친구 요청 보기")
-                    }
-                    NavigationLink(destination: FriendSearchView()) {
-                        Text("친구 추가")
-                    }
-                    NavigationLink(destination: BlockFriendsView()) {
-                        Text("차단한 친구")
-                    }
+                NavigationLink(destination: FriendSearchView()) {
+                    Text("친구 추가")
+                }
+                NavigationLink(destination: BlockFriendsView()) {
+                    Text("차단한 친구")
                 }
             }
-            .navigationTitle("친구 리스트")
+
+            // 수정된 친구 목록 표시
+            // List 내에서 ForEach를 바로 사용하고, FriendItemView를 감싸던 ScrollView와 LazyVStack 제거
+            Section(header: Text("내 친구 (\(friendStore.friends.count)명)")) {
+                if friendStore.isLoading {
+                    ProgressView("친구 목록 로드 중...")
+                } else if friendStore.friends.isEmpty {
+                    Text("친구 목록이 비어 있습니다.").foregroundColor(.secondary)
+                } else {
+                    ForEach(friendStore.friends, id: \.friendsId) { friend in
+                        FriendItemView(friend: friend)
+                    }
+                    // TODO: 스와이프 삭제 기능 List에서 구현 (FriendStore.deleteFriend 연동)
+                    // .onDelete(perform: friendStore.deleteFriend)
+                }
+            }
+        }
+        .navigationTitle("친구 리스트")
+        .onAppear { // 뷰가 나타날 때 데이터 로드
+            friendStore.loadFriendsFromServer()
         }
     }
 }

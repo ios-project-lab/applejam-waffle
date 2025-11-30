@@ -13,6 +13,7 @@ struct FutureLetterApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var goalStore = GoalStore()
     @StateObject private var goalHistoryStore = GoalHistoryStore()
+    @StateObject private var friendStore = FriendStore()
 
     var body: some Scene {
         WindowGroup {
@@ -29,6 +30,7 @@ struct FutureLetterApp: App {
                 .environmentObject(appState)
                                 .environmentObject(goalStore)
                                 .environmentObject(goalHistoryStore)
+                                .environmentObject(friendStore)
             }
         }
 //        WindowGroup{
