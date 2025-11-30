@@ -58,7 +58,7 @@ struct LetterReplyView: View {
         guard let myUser = appState.currentUser else { return }
         
         // 서버 주소 설정
-        guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else { return }
+        guard let url = URL(string: "http://124.56.5.77/fletter/LetterCompose.php") else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

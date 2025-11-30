@@ -101,7 +101,7 @@ struct LetterComposeView: View {
             showAlert = true; return
         }
         
-        guard let url = URL(string: "http://localhost/fletter/LetterCompose.php") else { return }
+        guard let url = URL(string: "http://124.56.5.77/fletter/LetterCompose.php") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")

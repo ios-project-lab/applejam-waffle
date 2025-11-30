@@ -100,7 +100,7 @@ struct LetterDetailView: View {
     
     // 읽음 처리
     func markAsRead() {
-        guard let url = URL(string: "http://localhost/fletter/ReadLetter.php") else { return }
+        guard let url = URL(string: "http://124.56.5.77/fletter/ReadLetter.php") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -110,7 +110,7 @@ struct LetterDetailView: View {
     
     // 답장 목록 불러오기
     func fetchReplies() {
-        let urlString = "http://localhost/fletter/getReplies.php?parentId=\(letter.lettersId)"
+        let urlString = "http://124.56.5.77/fletter/getReplies.php?parentId=\(letter.lettersId)"
         guard let url = URL(string: urlString) else { return }
         
         print("[답장 불러오기] 시작: \(urlString)")

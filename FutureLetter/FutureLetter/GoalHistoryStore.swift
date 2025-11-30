@@ -12,7 +12,7 @@ class GoalHistoryStore: ObservableObject {
     @Published var goalHistories: [GoalHistoryItem] = []
     @Published var isLoading: Bool = false
     
-        private let baseURLString = "http://localhost/fletter/getGoalHistories.php"
+        private let baseURLString = "http://124.56.5.77/fletter/getGoalHistories.php"
         private var currentUserId: Int {
             return UserDefaults.standard.integer(forKey: "currentUserPK")
         }

@@ -12,7 +12,7 @@ header('Access-Control-Allow-Origin: *');
 //$pw = getenv('DB_PASSWORD');
 //$dbName = getenv('DB_NAME');
 
-include_once(./config.php);
+include_once('./config.php');
 
 // MySQL 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
