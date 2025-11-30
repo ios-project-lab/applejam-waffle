@@ -4,7 +4,7 @@
 //
 //  Created by Chaemin Yu on 10/27/25.
 //
-
+//
 import SwiftUI
 
 struct FriendRequestsView: View {

@@ -26,8 +26,7 @@ struct FriendItemView: View {
 
             VStack(alignment: .leading) {
                 Text(friend.nickName).bold()
-                Text("@\(friend.friendsId)").font(.caption).foregroundColor(.secondary)
-                Text(friend.friendStatusName).bold()
+                Text(friend.friendStatusName)
             }
             Spacer()
             if friend.isBlocked { Text("차단됨").font(.caption).foregroundColor(.red) }
