@@ -70,10 +70,11 @@ struct HomeView: View {
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
+                // 로드 호출
                 if goalStore.goals.isEmpty {
-                    goalStore.loadGoalsFromServer()
+                    // Todo: 예외처리
                 }
-
+                
                 if appState.allLetters.isEmpty {
                     appState.fetchAllLetters()
                 }
