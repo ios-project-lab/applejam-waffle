@@ -93,8 +93,10 @@ struct LetterDetailView: View {
             }
         }
         // 답장 보내고 돌아왔을 때 새로고침
-        .onChange(of: showReply) { isShowing in
-            if !isShowing { fetchReplies() }
+        .onChange(of: showReply) { _, isShowing in
+            if !isShowing {
+                fetchReplies()
+            }
         }
     }
     

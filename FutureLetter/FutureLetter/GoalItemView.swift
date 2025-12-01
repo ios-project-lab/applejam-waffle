@@ -1,30 +1,20 @@
 import SwiftUI
-struct GoalItem: Codable, Identifiable {
-
-    let id = UUID()
-    var goalsId : Int = 0
-    var title: String
-    var category: String
-    var categoriesId: Int
-    var description: String = "description ~~~~"
-    var creationDate: Date
-    var deadLine: Date
-    var progress: Int = 0
-    var completed: Bool = false
-
-}
-
-import SwiftUI
 
 struct GoalItemView: View {
-   
-    var goal: GoalItem
-    
-    private static let dateFormatter: DateFormatter = {
+    var goal: Goal
+
+    private var validCreationDate: Date {
         let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter
-    }()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let dateStr = goal.creationDate ?? goal.createdAt else { return Date() }
+        return formatter.date(from: String(dateStr.prefix(10))) ?? Date()
+    }
+    
+    private var validDeadLine: Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: String(goal.deadLine.prefix(10))) ?? Date()
+    }
     
     var body: some View {
         // 카드 디자인
@@ -34,28 +24,32 @@ struct GoalItemView: View {
                 Text("목표명 :").fontWeight(.semibold)
                 Text(goal.title)
             }
+            
             HStack {
                 Text("카테고리 :").fontWeight(.semibold)
-                Text(goal.category)
+                // 카테고리 이름이 있으면 보여주고, 없으면 ID 표시
+                Text(goal.category ?? "\(goal.categoriesId)")
             }
             
             HStack {
                 Text("작성일 :").fontWeight(.semibold)
-                // DateFormatter 대신 style: .date를 사용
-                Text("\(goal.creationDate, style: .date)")
+                Text("\(validCreationDate, style: .date)")
             }
+            
             HStack {
                 Text("마감일 :").fontWeight(.semibold)
-                Text("\(goal.deadLine, style: .date)")
+                Text("\(validDeadLine, style: .date)")
             }
             
-            HStack {
-                Text("진행률 :").fontWeight(.semibold)
-                Text("\(goal.progress)%")
+            // 진행률 (데이터가 있으면 표시)
+            if let progress = goal.progress {
+                HStack {
+                    Text("진행률 :").fontWeight(.semibold)
+                    Text("\(progress)%")
+                }
             }
             
-            NavigationLink(destination: GoalHistoryListView(goalsId: goal.goalsId)) { // 히스토리뷰로 목표 전달
-                
+            NavigationLink(destination: Text("히스토리 뷰 (ID: \(goal.goalsId))")) {
                 Text("히스토리 보기")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
@@ -65,7 +59,6 @@ struct GoalItemView: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
-        // 카드 디자인
         .padding()
         .background(Color.white)
         .foregroundColor(.black)

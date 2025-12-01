@@ -1,10 +1,3 @@
-//
-//  AppState.swift
-//  FutureLetter
-//
-//  Created by mac07 on 11/2/25.
-//
-
 import Foundation
 import SwiftUI
 import Combine
@@ -27,44 +20,57 @@ struct Goal: Identifiable, Codable {
     let goalsId: Int
     let title: String
     let deadLine: String
+    let categoriesId: Int
+    
+    let creationDate: String?
     let createdAt: String?
     let updatedAt: String?
-    let categoriesId: Int
-    let usersId: Int
-
+    let usersId: Int?
+    let category: String?
+    let progress: Int?
+    let description: String?
+    
     var id: Int { goalsId }
+    
+    enum CodingKeys: String, CodingKey {
+        case goalsId, title, deadLine, categoriesId
+        case creationDate, createdAt, updatedAt
+        case usersId, category, progress, description
+    }
 }
 
 struct Letter: Identifiable, Codable {
-    let receiverNickName: String?
-    let receiverId: Int?
     let lettersId: Int
+    let title: String
+    let content: String
     let senderId: Int
     let senderNickName: String?
     let senderUserId: String?
-    let title: String
-    let content: String
+    let receiverId: Int?
+    let receiverNickName: String?
+    
     let expectedArrivalTime: String
     let isRead: Int
-    let parentLettersId: Int
     let isLocked: Int
+    let parentLettersId: Int
     let replyCount: Int?
     
-    enum CodingKeys: String, CodingKey {
-        case lettersId, senderId, senderNickName, senderUserId
-        case title, content, expectedArrivalTime
-        case isRead, parentLettersId, isLocked, receiverId, receiverNickName
-        case replyCount
-    }
-    
+    let goalId: Int?
+
     var id: Int { lettersId }
+
+    enum CodingKeys: String, CodingKey {
+        case lettersId, title, content
+        case senderId, senderNickName, senderUserId
+        case receiverId, receiverNickName
+        case expectedArrivalTime, isRead, isLocked, parentLettersId, replyCount
+        case goalId
+    }
 
     var arrivalDate: Date {
         let dateString = String(expectedArrivalTime.prefix(10))
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone.current
         return formatter.date(from: dateString) ?? Date.distantFuture
     }
     
@@ -82,12 +88,53 @@ struct Friend: Identifiable, Codable {
     var blocked: Bool = false
 }
 
-
 final class AppState: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoggedIn: Bool = false
     @Published var goals: [Goal] = []
-    @Published var inbox: [Letter] = []
+    @Published var allLetters: [Letter] = []
+    
+    var inbox: [Letter] {
+        allLetters.filter { $0.receiverId == currentUserId }
+    }
+    var sentbox: [Letter] {
+        allLetters.filter { $0.senderId == currentUserId }
+    }
+    
     @Published var friends: [Friend] = []
     @Published var friendRequests: [Friend] = []
+
+    private var currentUserId: Int {
+        if let user = currentUser { return user.usersId }
+        return UserDefaults.standard.integer(forKey: "currentUserPK")
+    }
+    
+    func fetchAllLetters() {
+        let userId = currentUserId
+        if userId == 0 { return }
+
+        let urlString = "http://124.56.5.77/fletter/getInBox.php?userId=\(userId)"
+        print("전체 편지(받은/보낸) 요청: \(urlString)")
+        
+        guard let url = URL(string: urlString) else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else { return }
+            do {
+                let decoder = JSONDecoder()
+                let decodedLetters = try decoder.decode([Letter].self, from: data)
+                
+                DispatchQueue.main.async {
+                    self.allLetters = decodedLetters
+                    print("편지 로드 완료: 총 \(decodedLetters.count)개")
+                }
+            } catch {
+                print("편지 디코딩 에러: \(error)")
+                // 디버깅: 서버 응답 확인
+                if let str = String(data: data, encoding: .utf8) {
+                    print("응답 원본: \(str)")
+                }
+            }
+        }.resume()
+    }
 }

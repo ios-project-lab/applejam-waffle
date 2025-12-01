@@ -8,3 +8,5 @@ db-scripts
 xcuserdata/
 xcdebugger/
 
+php/config.php
+
