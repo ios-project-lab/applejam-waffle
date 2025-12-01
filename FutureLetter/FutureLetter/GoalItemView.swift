@@ -49,7 +49,7 @@ struct GoalItemView: View {
                 }
             }
             
-            NavigationLink(destination: Text("히스토리 뷰 (ID: \(goal.goalsId))")) {
+            NavigationLink(destination: GoalHistoryListView(goalsId: goal.goalsId)) { // 히스토리뷰로 목표 전달
                 Text("히스토리 보기")
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)

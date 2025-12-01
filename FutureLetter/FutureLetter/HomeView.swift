@@ -84,7 +84,7 @@ struct HomeView: View {
                 
                 // 로드 호출
                 if goalStore.goals.isEmpty {
-                    // Todo: 예외처리
+                    goalStore.loadGoalsFromServer()
                 }
                 
                 if appState.allLetters.isEmpty {
@@ -125,7 +125,7 @@ struct GoalsSection: View {
             } else {
                 ForEach(topSummaries) { goal in
                     NavigationLink {
-                        Text("\(goal.title) 상세 뷰")
+                        GoalHistoryListView(goalsId: goal.goalsId)
                     } label: {
                         GoalHomeItemView(goal: goal)
                     }
