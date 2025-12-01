@@ -103,7 +103,7 @@ class FriendService {
         completion: @escaping (Result<String, Error>) -> Void
     ) {
 
-        let baseURLString = "http://localhost/fletter/sendFriendRequest.php"
+        let baseURLString = "http://124.56.5.77/fletter/sendFriendRequest.php"
         _ = currentUserId
 
         // URLComponents 사용 필요 없음 → 그냥 URL 만들면 됨

@@ -16,7 +16,7 @@ class GoalCategoryService {
     // 비동기 함수로 카테고리 로드 기능 제공
     func fetchCategories(completion: @escaping ([GoalCategory]) -> Void) {
         
-        guard let url = URL(string: "http://localhost/fletter/getcategories.php") else {
+        guard let url = URL(string: "http://124.56.5.77/fletter/getcategories.php") else {
             print("잘못된 URL")
             completion([]) // 실패 시 빈 배열 반환
             return

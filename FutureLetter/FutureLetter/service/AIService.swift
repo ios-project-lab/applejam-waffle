@@ -25,8 +25,8 @@ class AIService {
         completion: @escaping ([String: Any]?) -> Void
     ) {
 
-        guard let url = URL(string: "http://localhost/fletter/openai.php") else {
-            print("❌ 잘못된 URL")
+        guard let url = URL(string: "http://124.56.5.77/fletter/openai.php") else {
+            print("잘못된 URL")
             completion(nil)
             return
         }
