@@ -16,6 +16,12 @@ struct User: Identifiable, Codable {
     var identifiableId: Int { usersId }
 }
 
+struct UpdateProfileResponse: Codable {
+    let success: Bool
+    let message: String?
+    let profileImageUrl: String?
+}
+
 struct Goal: Identifiable, Codable {
     let goalsId: Int
     let title: String

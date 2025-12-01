@@ -119,11 +119,10 @@ struct ProfileUpdateView: View {
             birthDay: u.birthDay,
             gender: u.gender,
             userStatus: u.userStatus,
-            profileImage: updatedImageString,   // ⭐ Base64 문자열 저장!
+            profileImage: updatedImageString,
             createdAt: u.createdAt
         )
         
         presentationMode.wrappedValue.dismiss()
     }
 }
-
