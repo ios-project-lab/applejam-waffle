@@ -4,8 +4,9 @@
 //
 //  Created by Chaemin Yu on 10/27/25.
 //
-//
+
 import SwiftUI
+
 struct FriendRequest: Codable {
     let friendsId: Int
     let requesterId: Int
@@ -19,6 +20,10 @@ struct FriendRequestResponse: Codable {
     let received: [FriendRequest]
     let sent: [FriendRequest]
 }
+struct FriendBlockResponse: Codable {
+    let sent: [FriendRequest]
+}
+
 struct FriendRequestsView: View {
     @State private var received: [FriendRequest] = []
     @State private var sent: [FriendRequest] = []
@@ -32,7 +37,10 @@ struct FriendRequestsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
 
-                Text("받은 요청").font(.headline).padding(.top)
+                // MARK: - 받은 요청
+                Text("받은 요청")
+                    .font(.headline)
+                    .padding(.top)
 
                 ForEach(received, id: \.friendsId) { r in
                     VStack(alignment: .leading, spacing: 8) {
@@ -40,26 +48,29 @@ struct FriendRequestsView: View {
 
                         HStack {
                             Button("수락") {
-                                respondRequest(friendsId: r.friendsId, action: "accept")
+                                respond(action: "accept", friendsId: r.friendsId)
                             }
                             .buttonStyle(.bordered)
 
                             Button("거절") {
-                                respondRequest(friendsId: r.friendsId, action: "reject")
+                                respond(action: "reject", friendsId: r.friendsId)
                             }
                             .buttonStyle(.bordered)
                         }
                     }
                 }
 
-                Text("보낸 요청").font(.headline).padding(.top)
+                // MARK: - 보낸 요청
+                Text("보낸 요청")
+                    .font(.headline)
+                    .padding(.top)
 
                 ForEach(sent, id: \.friendsId) { s in
                     VStack(alignment: .leading, spacing: 8) {
                         Text("\(s.receiverNick ?? "")님에게 친구 요청을 보냈습니다.")
 
                         Button("요청 취소") {
-                            respondRequest(friendsId: s.friendsId, action: "cancel")
+                            respond(action: "cancel", friendsId: s.friendsId)
                         }
                         .buttonStyle(.bordered)
                     }
@@ -77,7 +88,7 @@ struct FriendRequestsView: View {
         }
     }
 
-    // 서버에서 요청 현황 가져오기
+    // MARK: - 서버에서 요청 현황 가져오기
     func loadData() {
         friendService.loadFriendRequests(currentUserId: userId) { result in
             DispatchQueue.main.async {
@@ -93,13 +104,12 @@ struct FriendRequestsView: View {
         }
     }
 
-    // 수락 / 거절 / 취소 기능
-    func respondRequest(friendsId: Int, action: String) {
-        let url = "http://124.56.5.77/fletter/\(action)Friend.php"
-        friendService.postToServer(url: url, friendsId: friendsId) { result in
-            // 성공 처리
-            loadData()
+    // MARK: - 요청 수락/거절/취소 공통 처리
+    func respond(action: String, friendsId: Int) {
+        friendService.respondFriendRequest(action: action, friendsId: friendsId) { _ in
+            DispatchQueue.main.async {
+                loadData()
+            }
         }
     }
-
 }

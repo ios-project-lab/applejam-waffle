@@ -25,12 +25,12 @@ struct HomeView: View {
                         }
                         Spacer()
                     }
-                    
+                   
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white)
                         .frame(height: 120)
                         .overlay(Text("그래프 삽입 예정").foregroundColor(.gray))
-                    
+                   
                     HStack {
                         NavigationLink(destination: SetGoalView()) {
                             Text("목표 작성")
@@ -70,12 +70,13 @@ struct HomeView: View {
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                // 데이터 로드
+                // 로드 호출
                 if goalStore.goals.isEmpty {
-                    goalStore.loadGoalsFromServer()
+                    // Todo: 예외처리
                 }
-                if appState.inbox.isEmpty {
-                    appState.fetchInbox()
+                
+                if appState.allLetters.isEmpty {
+                    appState.fetchAllLetters()
                 }
             }
         }

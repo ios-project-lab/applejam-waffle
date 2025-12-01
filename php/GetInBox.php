@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 //$pw = getenv('DB_PASSWORD');
 //$dbName = getenv('DB_NAME');
 
-include_once('./config.php');
+include_once(./config.php);
 
 $conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");
@@ -25,46 +25,67 @@ if ($conn->connect_error) {
     die(json_encode(["error" => "DB Connection failed: " . $conn->connect_error]));
 }
 
-$userId = $_GET["userId"] ?? "";
-if ($userId === "") { echo json_encode(["error" => "missing userId"]); exit; }
-$userEsc = intval($userId);
 
-$sql = "SELECT 
-            L.lettersId, 
-            L.senderId, 
-            L.receiverId, 
-            L.title, 
-            L.content, 
-            L.expectedArrivalTime, 
-            L.isRead, 
-            L.parentLettersId, 
-            L.isLocked,
-            L.createdAt,
-            IFNULL(U.nickName, '알수없음') as senderNickName,
-            IFNULL(U.id, '') as senderUserId,
-            (SELECT COUNT(*) FROM Letters WHERE parentLettersId = L.lettersId) as replyCount
-        FROM Letters L 
-        LEFT JOIN Users U ON L.senderId = U.usersId 
-        WHERE (L.receiverId = $userEsc OR L.senderId = $userEsc) 
-        ORDER BY L.expectedArrivalTime DESC";
+$userId = isset($_GET['userId']) ? (int)$_GET['userId'] : 0;
 
-$result = $conn->query($sql);
-$list = array();
+if ($userId == 0) {
+    echo json_encode([]);
+    exit;
+}
+
+$sql = "
+    SELECT 
+        L.lettersId,
+        L.title,
+        L.content,
+        
+        -- 보낸 사람 정보 (S)
+        L.senderId,
+        S.nickName AS senderNickName, 
+        S.id AS senderUserId,
+        
+        -- 받는 사람 정보 (R)
+        L.receiverId,
+        R.nickName AS receiverNickName,
+        
+        L.expectedArrivalTime,
+        L.isRead,
+        L.isLocked,
+        L.parentLettersId,
+        
+        -- 답장 개수 계산
+        (SELECT COUNT(*) FROM Letters WHERE parentLettersId = L.lettersId) AS replyCount,
+        
+        -- goalId가 없을 경우를 대비해 NULL 처리
+        NULL AS goalId
+        
+    FROM Letters L
+    LEFT JOIN users S ON L.senderId = S.usersId
+    LEFT JOIN users R ON L.receiverId = R.usersId
+    WHERE L.receiverId = $userId OR L.senderId = $userId
+    ORDER BY L.expectedArrivalTime DESC
+";
+
+$result = mysqli_query($conn, $sql);
+$response = array();
 
 if ($result) {
-    while ($row = $result->fetch_assoc()) {
+    while ($row = mysqli_fetch_assoc($result)) {
         $row['lettersId'] = (int)$row['lettersId'];
         $row['senderId'] = (int)$row['senderId'];
         $row['receiverId'] = (int)$row['receiverId'];
         $row['isRead'] = (int)$row['isRead'];
-        $row['parentLettersId'] = (int)$row['parentLettersId'];
         $row['isLocked'] = (int)$row['isLocked'];
+        $row['parentLettersId'] = (int)$row['parentLettersId'];
         $row['replyCount'] = (int)$row['replyCount'];
-        
-        $list[] = $row;
+        $row['goalId'] = null;
+
+        array_push($response, $row);
     }
 }
 
-echo json_encode($list, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-$conn->close();
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+mysqli_close($conn);
 ?>

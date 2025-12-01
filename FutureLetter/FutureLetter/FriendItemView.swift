@@ -3,6 +3,7 @@
 //  FutureLetter
 //
 //  Created by Chaemin Yu on 10/27/25.
+//  Updated by kcw9609
 //
 
 import SwiftUI
@@ -21,15 +22,22 @@ struct FriendItem: Codable {
 
 struct FriendItemView: View {
     var friend: FriendItem
+    private let friendService = FriendService()
     var body: some View {
         HStack {
-
+            
             VStack(alignment: .leading) {
-                Text(friend.nickName).bold()
+                Text(friend.nickName)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
                 Text(friend.friendStatusName)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                
             }
-            Spacer()
-            if friend.isBlocked { Text("차단됨").font(.caption).foregroundColor(.red) }
-        }.padding(.vertical, 6)
+            .padding()
+        }
     }
-}
+    }
+
