@@ -56,6 +56,8 @@ struct Letter: Identifiable, Codable {
     let replyCount: Int?
     
     let goalId: Int?
+    
+    let aiCheering: String?
 
     var id: Int { lettersId }
 
@@ -65,6 +67,7 @@ struct Letter: Identifiable, Codable {
         case receiverId, receiverNickName
         case expectedArrivalTime, isRead, isLocked, parentLettersId, replyCount
         case goalId
+        case aiCheering
     }
 
     var arrivalDate: Date {
@@ -79,7 +82,33 @@ struct Letter: Identifiable, Codable {
         let arrival = Calendar.current.startOfDay(for: arrivalDate)
         return today < arrival
     }
+    
+    var aiCheeringParsed: AICheering? {
+        guard let aiCheering = aiCheering,
+              let data = aiCheering.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(AICheering.self, from: data)
+    }
+
 }
+
+struct AICheering: Codable {
+    let overall_analysis: String
+    let sentiment_analysis: SentimentAnalysis
+    let goal_analysis: GoalAnalysis
+
+    struct SentimentAnalysis: Codable {
+        let sentiment: String
+        let score: Double
+        let reason: String
+    }
+
+    struct GoalAnalysis: Codable {
+        let progress_percent: Int
+        let feedback: String
+        let next_step: String
+    }
+}
+
 
 struct Friend: Identifiable, Codable {
     let id: String

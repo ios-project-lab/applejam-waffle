@@ -36,25 +36,25 @@ struct HomeView: View {
                             Text("목표 작성")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                         NavigationLink(destination: LetterComposeView()) {
                             Text("편지쓰기")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                         NavigationLink(destination: FriendSearchView()) {
                             Text("친구찾기")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                     }
                 }

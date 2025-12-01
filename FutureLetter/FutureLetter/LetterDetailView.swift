@@ -5,6 +5,8 @@ struct LetterDetailView: View {
     @State private var replies: [Letter] = []
     @State private var showReply = false
     @State private var isLoadingReplies = false
+    @State private var aiCheer: AICheering? = nil
+
     
     var body: some View {
         VStack {
@@ -52,6 +54,52 @@ struct LetterDetailView: View {
                         
                         Divider()
                         
+                        // AI 분석 섹션
+                        if let ai = aiCheer {
+                                                VStack(alignment: .leading, spacing: 10) {
+                                                    
+                                                    Text("🧠 AI 응원 요약")
+                                                        .font(.title3).bold()
+                                                        .padding(.top)
+
+                                                    Text(ai.overall_analysis)
+                                                        .font(.body)
+                                                        .padding(.bottom, 8)
+
+                                                    Divider()
+
+                                                    Text("💬 감정 분석 결과")
+                                                        .font(.headline)
+
+                                                    Text("• 감정: \(ai.sentiment_analysis.sentiment)")
+                                                    Text("• 점수: \(ai.sentiment_analysis.score)")
+                                                    Text("• 이유: \(ai.sentiment_analysis.reason)")
+                                                        .padding(.bottom, 8)
+
+                                                    Divider()
+                                                    
+                                                    Text("🎯 목표 분석")
+                                                        .font(.headline)
+
+                                                    Text("• 진행도: \(ai.goal_analysis.progress_percent)%")
+                                                    Text("• 피드백: \(ai.goal_analysis.feedback)")
+                                                    Text("• 다음 단계: \(ai.goal_analysis.next_step)")
+                                                        .padding(.bottom, 8)
+
+                                                    Divider()
+
+                                                    Text("📣 응원 메시지")
+                                                        .font(.headline)
+                                                    
+                                                    Text(makeEncouragement(ai))
+                                                        .font(.body)
+                                                        .padding(.bottom, 20)
+                                                }
+                                                .padding(.vertical)
+                                            }
+
+                                            Divider()
+                        
                         // 답장 목록 (댓글처럼 표시)
                         if !replies.isEmpty {
                             Text("답장 (\(replies.count))")
@@ -90,6 +138,7 @@ struct LetterDetailView: View {
             if !letter.isActuallyLocked {
                 markAsRead()
                 fetchReplies() // 답장 불러오기
+                decodeAiCheering()
             }
         }
         // 답장 보내고 돌아왔을 때 새로고침
@@ -144,6 +193,35 @@ struct LetterDetailView: View {
             }
         }.resume()
     }
+    
+    func decodeAiCheering() {
+        guard let json = letter.aiCheering else { return }
+        
+        if let data = json.data(using: .utf8) {
+            do {
+                let decoded = try JSONDecoder().decode(AICheering.self, from: data)
+                self.aiCheer = decoded
+            } catch {
+                print("[AI 디코딩 실패] \(error)")
+            }
+        }
+    }
+    
+    func makeEncouragement(_ ai: AICheering) -> String {
+        """
+        지금 감정 상태는 "\(ai.sentiment_analysis.sentiment)" 이지만,
+        너무 걱정하지 않아도 돼요!
+
+        \(ai.sentiment_analysis.reason)
+
+        앞으로 이렇게 하면 더 좋아질 거예요:
+        \(ai.goal_analysis.next_step)
+
+        언제든지 당신의 성장을 응원하고 있어요 😊
+        """
+    }
+
+
 
     struct ReplyRow: View {
         var reply: Letter
