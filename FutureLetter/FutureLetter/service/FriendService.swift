@@ -11,6 +11,7 @@ class FriendService {
     var currentUserId: Int {
         return UserDefaults.standard.integer(forKey: "currentUserPK")
     }
+    
     func postToServer(url: String,
                       friendsId: Int,
                       completion: @escaping (Result<Data, Error>) -> Void) {
