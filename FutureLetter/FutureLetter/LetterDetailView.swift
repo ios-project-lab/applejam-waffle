@@ -56,49 +56,48 @@ struct LetterDetailView: View {
                         
                         // AI 분석 섹션
                         if let ai = aiCheer {
-                                                VStack(alignment: .leading, spacing: 10) {
-                                                    
-                                                    Text("🧠 AI 응원 요약")
-                                                        .font(.title3).bold()
-                                                        .padding(.top)
+                            VStack(alignment: .leading, spacing: 10) {
+                                
+                                Text("🧠 AI 응원 요약")
+                                    .font(.title3).bold()
+                                    .padding(.top)
 
-                                                    Text(ai.overall_analysis)
-                                                        .font(.body)
-                                                        .padding(.bottom, 8)
+                                Text(ai.overall_analysis)
+                                    .font(.body)
+                                    .padding(.bottom, 8)
 
-                                                    Divider()
+                                Divider()
 
-                                                    Text("💬 감정 분석 결과")
-                                                        .font(.headline)
+                                Text("💬 감정 분석 결과")
+                                    .font(.headline)
 
-                                                    Text("• 감정: \(ai.sentiment_analysis.sentiment)")
-                                                    Text("• 점수: \(ai.sentiment_analysis.score)")
-                                                    Text("• 이유: \(ai.sentiment_analysis.reason)")
-                                                        .padding(.bottom, 8)
+                                Text("• 감정: \(ai.sentiment_analysis.sentiment)")
+                                Text("• 점수: \(ai.sentiment_analysis.score)")
+                                Text("• 이유: \(ai.sentiment_analysis.reason)")
+                                    .padding(.bottom, 8)
 
-                                                    Divider()
-                                                    
-                                                    Text("🎯 목표 분석")
-                                                        .font(.headline)
+                                Divider()
+                                
+                                Text("🎯 목표 분석")
+                                    .font(.headline)
 
-                                                    Text("• 진행도: \(ai.goal_analysis.progress_percent)%")
-                                                    Text("• 피드백: \(ai.goal_analysis.feedback)")
-                                                    Text("• 다음 단계: \(ai.goal_analysis.next_step)")
-                                                        .padding(.bottom, 8)
+                                Text("• 진행도: \(ai.goal_analysis.progress_percent)%")
+                                Text("• 피드백: \(ai.goal_analysis.feedback)")
+                                Text("• 다음 단계: \(ai.goal_analysis.next_step)")
+                                    .padding(.bottom, 8)
 
-                                                    Divider()
+                                Divider()
 
-                                                    Text("📣 응원 메시지")
-                                                        .font(.headline)
-                                                    
-                                                    Text(makeEncouragement(ai))
-                                                        .font(.body)
-                                                        .padding(.bottom, 20)
-                                                }
-                                                .padding(.vertical)
-                                            }
-
-                                            Divider()
+                                Text("📣 응원 메시지")
+                                    .font(.headline)
+                                
+                                Text(makeEncouragement(ai))
+                                    .font(.body)
+                                    .padding(.bottom, 20)
+                            }
+                            .padding(.vertical)
+                        }
+                        Divider()
                         
                         // 답장 목록 (댓글처럼 표시)
                         if !replies.isEmpty {
@@ -195,17 +194,31 @@ struct LetterDetailView: View {
     }
     
     func decodeAiCheering() {
-        guard let json = letter.aiCheering else { return }
-        
-        if let data = json.data(using: .utf8) {
-            do {
-                let decoded = try JSONDecoder().decode(AICheering.self, from: data)
+        guard let jsonString = letter.aiCheering,
+              !jsonString.isEmpty else {
+            print("[AI 없음] aiCheering 값이 비어있습니다.")
+            return
+        }
+
+        print("[AI 원본 JSON] \(jsonString)")
+        print("[AI 원본문자열] \(letter.aiCheering ?? "nil")")
+
+        guard let data = jsonString.data(using: .utf8) else {
+            print("[AI 디코딩 실패] UTF8 변환 실패")
+            return
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode(AICheering.self, from: data)
+            DispatchQueue.main.async {
                 self.aiCheer = decoded
-            } catch {
-                print("[AI 디코딩 실패] \(error)")
+                print("[AI 디코딩 성공] \(decoded)")
             }
+        } catch {
+            print("[AI 디코딩 에러] \(error)")
         }
     }
+
     
     func makeEncouragement(_ ai: AICheering) -> String {
         """
