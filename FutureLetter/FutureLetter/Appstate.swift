@@ -159,7 +159,6 @@ final class AppState: ObservableObject {
                 }
             } catch {
                 print("편지 디코딩 에러: \(error)")
-                // 디버깅: 서버 응답 확인
                 if let str = String(data: data, encoding: .utf8) {
                     print("응답 원본: \(str)")
                 }
