@@ -20,6 +20,36 @@ struct ProfileSettingsView: View {
                 
                 // MARK: - 프로필 설정
                 Section(header: Text("프로필 설정")) {
+                    
+                    // ------------------------
+                    // 프로필 사진
+                    // ------------------------
+                    HStack {
+                        Text("프로필 사진")
+                        Spacer()
+                        
+                        if let base64 = appState.currentUser?.profileImage,
+                           let data = Data(base64Encoded: base64),
+                           let uiImage = UIImage(data: data) {
+                            
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                            
+                        } else {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    // ------------------------
+                    // ID / 닉네임
+                    // ------------------------
                     HStack {
                         Text("ID")
                         Spacer()
@@ -65,9 +95,6 @@ struct ProfileSettingsView: View {
                 
                 // MARK: - 기타
                 Section(header: Text("기타")) {
-                    NavigationLink("친구 관리") {
-                        Text("친구 관리 화면") // 필요하면 화면 연결
-                    }
                     
                     NavigationLink("백업 및 초기화") {
                         Text("백업 및 초기화 화면")
