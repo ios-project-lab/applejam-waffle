@@ -13,6 +13,9 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                NavigationLink(destination: NotificationView()) {
+                    Text("알림")
+                }
 
                 VStack(spacing: 16) {
                     HStack {
@@ -66,20 +69,20 @@ struct HomeView: View {
                 statsStore.loadTopicStats(userId: appState.currentUser?.usersId ?? 0)
                 statsStore.loadLatestAICheer(userId: appState.currentUser?.usersId ?? 0)
                 
-                print("===== 📈 감정 그래프 디버깅 =====")
-
-                if statsStore.emotionPoints.isEmpty {
-                    print("⚠️ 그래프 데이터 없음")
-                } else {
-                    for (i, point) in statsStore.emotionPoints.enumerated() {
-                        print("[\(i)] 날짜: \(point.date), 점수: \(point.score)")
-                    }
-                }
-
-                let maxScore = statsStore.emotionPoints.map { $0.score }.max() ?? 0
-                print("📈 최대 점수 =", maxScore)
-
-                print("===============================")
+//                print("===== 📈 감정 그래프 디버깅 =====")
+//
+//                if statsStore.emotionPoints.isEmpty {
+//                    print("⚠️ 그래프 데이터 없음")
+//                } else {
+//                    for (i, point) in statsStore.emotionPoints.enumerated() {
+//                        print("[\(i)] 날짜: \(point.date), 점수: \(point.score)")
+//                    }
+//                }
+//
+//                let maxScore = statsStore.emotionPoints.map { $0.score }.max() ?? 0
+//                print("📈 최대 점수 =", maxScore)
+//
+//                print("===============================")
 
                 
                 // 로드 호출

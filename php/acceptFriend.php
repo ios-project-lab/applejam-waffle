@@ -48,5 +48,25 @@ VALUES ('$receiverId', '$requesterId', '2', NOW(), NOW());
 mysqli_query($conn, $insertReverse);
 
 echo json_encode(["status" => "success"]);
+
+// 4) 🎉 친구 요청 수락 알림 생성
+// 알림을 받아야 하는 사람 = "요청을 보낸 사람" → requesterUsersId
+
+$notifSql = "
+INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId)
+VALUES ('친구 요청 수락됨', '상대방이 친구 요청을 수락했습니다!', 0, 3, ?)
+";
+
+$notif = $conn->prepare($notifSql);
+$notif->bind_param("i", $requesterId);
+
+if (!$notif->execute()) {
+    echo json_encode([
+        "error" => "notif_fail",
+        "detail" => $notif->error
+    ]);
+    exit;
+}
+
 $conn->close();
 ?>

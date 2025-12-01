@@ -125,6 +125,18 @@ struct AICheeringOverview: Codable {
     let aiCheering: String?
 }
 
+struct AppNotification: Identifiable, Codable {
+    let notificationsId: Int
+    let title: String
+    let content: String
+    let isRead: Int
+    let createdAt: String
+    let notificationTypesId: Int
+    let code: String?
+    let name: String?
+    
+    var id: Int { notificationsId }
+}
 
 
 struct Friend: Identifiable, Codable {
@@ -178,11 +190,11 @@ final class AppState: ObservableObject {
                     
                     self.emotionStatsStore?.updateEmotionPoints(from: decodedLetters)
                     print("📈 감정 점수 업데이트 실행됨!")
-                    
-                    print("📩 로드된 편지 raw JSON:")
-                    if let raw = String(data: data, encoding: .utf8) {
-                        print(raw)
-                    }
+//                    
+//                    print("📩 로드된 편지 raw JSON:")
+//                    if let raw = String(data: data, encoding: .utf8) {
+//                        print(raw)
+//                    }
 
                 }
             } catch {
