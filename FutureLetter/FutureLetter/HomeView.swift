@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var goalStore: GoalStore
+    @EnvironmentObject var statsStore: EmotionStatsStore
     
     var body: some View {
         NavigationView {
@@ -16,20 +17,11 @@ struct HomeView: View {
                 VStack(spacing: 16) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text("나의 변화 그래프")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                            Text("목표 진행 상황을 확인하세요.")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
+                            EmotionGraphView()
+                                .environmentObject(statsStore)
                         }
                         Spacer()
                     }
-                   
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white)
-                        .frame(height: 120)
-                        .overlay(Text("그래프 삽입 예정").foregroundColor(.gray))
                    
                     HStack {
                         NavigationLink(destination: SetGoalView()) {
@@ -70,6 +62,26 @@ struct HomeView: View {
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
+                statsStore.loadEmotionStats(userId: appState.currentUser?.usersId ?? 0)
+                statsStore.loadTopicStats(userId: appState.currentUser?.usersId ?? 0)
+                statsStore.loadLatestAICheer(userId: appState.currentUser?.usersId ?? 0)
+                
+                print("===== 📈 감정 그래프 디버깅 =====")
+
+                if statsStore.emotionPoints.isEmpty {
+                    print("⚠️ 그래프 데이터 없음")
+                } else {
+                    for (i, point) in statsStore.emotionPoints.enumerated() {
+                        print("[\(i)] 날짜: \(point.date), 점수: \(point.score)")
+                    }
+                }
+
+                let maxScore = statsStore.emotionPoints.map { $0.score }.max() ?? 0
+                print("📈 최대 점수 =", maxScore)
+
+                print("===============================")
+
+                
                 // 로드 호출
                 if goalStore.goals.isEmpty {
                     // Todo: 예외처리
