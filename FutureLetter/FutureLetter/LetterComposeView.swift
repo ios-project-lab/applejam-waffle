@@ -136,8 +136,21 @@ struct LetterComposeView: View {
         let parentId = replyToLetter?.lettersId ?? 0
         let goalIdValue = selectedGoalId ?? 0
         
-        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)&goalId=\(goalIdValue)"
-        
+        // 인코딩
+        func encode(_ value: String) -> String {
+            return value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        }
+
+        let body =
+            "senderId=\(myUser.usersId)" +
+            "&receiverId=\(finalReceiverId)" +
+            "&title=\(encode(title))" +
+            "&content=\(encode(content))" +
+            "&expectedArrivalTime=\(encode(dateStr))" +
+            "&parentLettersId=\(parentId)" +
+            "&goalId=\(goalIdValue)"
+
+        print("편지 작성 시, 데이터 확인", body)
         request.httpBody = body.data(using: .utf8)
         isLoading = true
         
