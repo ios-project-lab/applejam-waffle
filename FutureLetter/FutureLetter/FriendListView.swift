@@ -17,8 +17,7 @@ struct FriendListView: View {
                 }
             }
 
-            // 수정된 친구 목록 표시
-            // List 내에서 ForEach를 바로 사용하고, FriendItemView를 감싸던 ScrollView와 LazyVStack 제거
+            // 친구 목록 표시
             Section(header: Text("내 친구 (\(friendStore.friends.count)명)")) {
                 if friendStore.isLoading {
                     ProgressView("친구 목록 로드 중...")
