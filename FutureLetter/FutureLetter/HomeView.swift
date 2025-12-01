@@ -113,7 +113,7 @@ struct GoalsSection: View {
             } else {
                 ForEach(topSummaries) { goal in
                     NavigationLink {
-                        Text("\(goal.title) 상세 뷰")
+                        GoalHistoryListView(goalsId: goal.goalsId)
                     } label: {
                         GoalHomeItemView(goal: goal)
                     }
