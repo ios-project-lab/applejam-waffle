@@ -95,7 +95,7 @@ struct FriendRequestsView: View {
 
     // 수락 / 거절 / 취소 기능
     func respondRequest(friendsId: Int, action: String) {
-        let url = "http://localhost/fletter/\(action)Friend.php"
+        let url = "http://124.56.5.77/fletter/\(action)Friend.php"
         friendService.postToServer(url: url, friendsId: friendsId) { result in
             // 성공 처리
             loadData()
@@ -103,24 +103,3 @@ struct FriendRequestsView: View {
     }
 
 }
-
-//struct FriendRequestsView: View {
-//    @EnvironmentObject var appState: AppState
-//
-//    var body: some View {
-//        List {
-//            ForEach(appState.friendRequests) { fr in
-//                HStack {
-//                    Text(fr.displayName)
-//                    Spacer()
-//                    Button("수락") {
-//                        appState.friends.append(fr)
-//                        appState.friendRequests.removeAll { $0.id == fr.id }
-//                    }
-//                    .buttonStyle(.borderedProminent)
-//                }
-//            }
-//        }
-//        .navigationTitle("친구 요청")
-//    }
-//}
