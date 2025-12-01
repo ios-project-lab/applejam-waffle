@@ -55,7 +55,7 @@ struct HomeView: View {
             .onAppear {
                     // 로드 호출
                     if goalStore.goals.isEmpty {
-                        goalStore.loadGoalsFromServer()
+                        // Todo: 예외처리
                     }
                 }
         }
