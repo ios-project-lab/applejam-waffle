@@ -25,36 +25,36 @@ struct HomeView: View {
                         }
                         Spacer()
                     }
-                    
+                   
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white)
                         .frame(height: 120)
                         .overlay(Text("그래프 삽입 예정").foregroundColor(.gray))
-                    
+                   
                     HStack {
                         NavigationLink(destination: SetGoalView()) {
                             Text("목표 작성")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                         NavigationLink(destination: LetterComposeView()) {
                             Text("편지쓰기")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                         NavigationLink(destination: FriendSearchView()) {
                             Text("친구찾기")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.white)
+                                .background(Color.yellow)
                                 .cornerRadius(8)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                         }
                     }
                 }
@@ -70,12 +70,12 @@ struct HomeView: View {
             .navigationTitle("홈")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                // 데이터 로드
                 if goalStore.goals.isEmpty {
                     goalStore.loadGoalsFromServer()
                 }
-                if appState.inbox.isEmpty {
-                    appState.fetchInbox()
+
+                if appState.allLetters.isEmpty {
+                    appState.fetchAllLetters()
                 }
             }
         }

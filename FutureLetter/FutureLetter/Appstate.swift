@@ -91,28 +91,49 @@ struct Friend: Identifiable, Codable {
 final class AppState: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoggedIn: Bool = false
-    
     @Published var goals: [Goal] = []
-    @Published var inbox: [Letter] = []
-    @Published var sentbox: [Letter] = []
+    @Published var allLetters: [Letter] = []
+    
+    var inbox: [Letter] {
+        allLetters.filter { $0.receiverId == currentUserId }
+    }
+    var sentbox: [Letter] {
+        allLetters.filter { $0.senderId == currentUserId }
+    }
     
     @Published var friends: [Friend] = []
     @Published var friendRequests: [Friend] = []
+
+    private var currentUserId: Int {
+        if let user = currentUser { return user.usersId }
+        return UserDefaults.standard.integer(forKey: "currentUserPK")
+    }
     
-    func fetchInbox() {
-        guard let user = currentUser else { return }
-        let urlString = "http://124.56.5.77/fletter/getMessages.php?userId=\(user.usersId)"
+    func fetchAllLetters() {
+        let userId = currentUserId
+        if userId == 0 { return }
+
+        let urlString = "http://124.56.5.77/fletter/getInBox.php?userId=\(userId)"
+        print("전체 편지(받은/보낸) 요청: \(urlString)")
+        
         guard let url = URL(string: urlString) else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else { return }
             do {
-                let decodedLetters = try JSONDecoder().decode([Letter].self, from: data)
+                let decoder = JSONDecoder()
+                let decodedLetters = try decoder.decode([Letter].self, from: data)
+                
                 DispatchQueue.main.async {
-                    self.inbox = decodedLetters
+                    self.allLetters = decodedLetters
+                    print("편지 로드 완료: 총 \(decodedLetters.count)개")
                 }
             } catch {
-                print(error)
+                print("편지 디코딩 에러: \(error)")
+                // 디버깅: 서버 응답 확인
+                if let str = String(data: data, encoding: .utf8) {
+                    print("응답 원본: \(str)")
+                }
             }
         }.resume()
     }
