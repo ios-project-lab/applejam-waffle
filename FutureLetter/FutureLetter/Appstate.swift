@@ -109,6 +109,23 @@ struct AICheering: Codable {
     }
 }
 
+struct EmotionPoint: Identifiable, Codable {
+    var id = UUID()
+    let date: String
+    let score: Double
+}
+
+struct TopicStats: Identifiable, Codable {
+    var id = UUID()
+    let sentiment: String
+    let count: Int
+}
+
+struct AICheeringOverview: Codable {
+    let aiCheering: String?
+}
+
+
 
 struct Friend: Identifiable, Codable {
     let id: String
@@ -122,6 +139,8 @@ final class AppState: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var goals: [Goal] = []
     @Published var allLetters: [Letter] = []
+    
+    weak var emotionStatsStore: EmotionStatsStore?
     
     var inbox: [Letter] {
         allLetters.filter { $0.receiverId == currentUserId }
@@ -156,6 +175,15 @@ final class AppState: ObservableObject {
                 DispatchQueue.main.async {
                     self.allLetters = decodedLetters
                     print("편지 로드 완료: 총 \(decodedLetters.count)개")
+                    
+                    self.emotionStatsStore?.updateEmotionPoints(from: decodedLetters)
+                    print("📈 감정 점수 업데이트 실행됨!")
+                    
+                    print("📩 로드된 편지 raw JSON:")
+                    if let raw = String(data: data, encoding: .utf8) {
+                        print(raw)
+                    }
+
                 }
             } catch {
                 print("편지 디코딩 에러: \(error)")

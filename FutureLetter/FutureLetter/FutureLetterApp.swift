@@ -14,6 +14,7 @@ struct FutureLetterApp: App {
     @StateObject private var goalStore = GoalStore()
     @StateObject private var goalHistoryStore = GoalHistoryStore()
     @StateObject private var friendStore = FriendStore()
+    @StateObject private var emotionStatsStore = EmotionStatsStore()
 
     var body: some Scene {
         WindowGroup {
@@ -23,18 +24,17 @@ struct FutureLetterApp: App {
             }else{
                 NavigationStack{
                     TabBarView()
-//                        .environmentObject(appState)
-//                        .environmentObject(goalStore)
-//                        .environmentObject(goalHistoryStore)
+
                 }
                 .environmentObject(appState)
-                                .environmentObject(goalStore)
-                                .environmentObject(goalHistoryStore)
-                                .environmentObject(friendStore)
+                .environmentObject(goalStore)
+                .environmentObject(goalHistoryStore)
+                .environmentObject(friendStore)
+                .environmentObject(emotionStatsStore)
+                .onAppear{
+                    appState.emotionStatsStore = emotionStatsStore
+                }
             }
         }
-//        WindowGroup{
-//                ContentView().environmentObject(appState)
-//        }
     }
 }
