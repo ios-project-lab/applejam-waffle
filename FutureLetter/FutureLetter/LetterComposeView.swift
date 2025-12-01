@@ -7,13 +7,14 @@ struct LetterComposeView: View {
     var replyToLetter: Letter? = nil
     
     @State private var receiverIdInput: String = ""
-    @State private var sendType = 0 // 0: 나, 1: 친구
+    @State private var sendType = 0
     @State private var title = ""
     @State private var content = ""
     @State private var receiveDate = Date()
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var selectedGoalId: Int? = nil
     
     var body: some View {
         NavigationView {
@@ -31,16 +32,30 @@ struct LetterComposeView: View {
                             .pickerStyle(SegmentedPickerStyle())
                             
                             if sendType == 1 {
-                                TextField("친구 아이디 입력", text: $receiverIdInput)
-                                    .autocapitalization(.none)
+                                TextField("친구 아이디 입력", text: $receiverIdInput).autocapitalization(.none)
                             }
                         }
                     }
                     
-                    Section(header: Text("도착 예정일")) {
-                        DatePicker("언제 도착할까요?", selection: $receiveDate, in: Date()..., displayedComponents: [.date])
-                        Text("설정된 날짜까지 편지는 잠김 상태가 됩니다.")
-                            .font(.caption).foregroundColor(.gray)
+                    if replyToLetter == nil {
+                        Section(header: Text("도착 예정일")) {
+                            DatePicker("언제 도착할까요?", selection: $receiveDate, in: Date()..., displayedComponents: [.date])
+                        }
+                    }
+                    
+                    // 목표 선택
+                    Section(header: Text("어떤 목표를 위한 편지인가요?")) {
+                        if appState.goals.isEmpty {
+                            Text("목표 불러오는 중...").foregroundColor(.gray)
+                        } else {
+                            Picker("목표 선택", selection: $selectedGoalId) {
+                                Text("선택 안 함").tag(nil as Int?)
+                                ForEach(appState.goals) { goal in
+                                    Text(goal.title).tag(goal.goalsId as Int?)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
                     }
                     
                     Section(header: Text("편지 내용")) {
@@ -49,57 +64,66 @@ struct LetterComposeView: View {
                     }
                 }
                 
-                Button {
-                    sendLetter()
-                } label: {
+                Button { sendLetter() } label: {
                     HStack {
                         if isLoading { ProgressView() }
                         Text("편지 보내기").bold()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.yellow)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .frame(maxWidth: .infinity).padding()
+                    .background(Color.yellow).foregroundColor(.white).cornerRadius(8)
                 }
-                .disabled(isLoading)
-                .padding()
-                
-                Spacer().frame(height: 20)
+                .disabled(isLoading).padding()
             }
             .navigationTitle(replyToLetter == nil ? "편지 쓰기" : "답장 쓰기")
+            .onAppear {
+                fetchGoals()
+            }
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
             }
         }
     }
+    // 목표 가져오기
+    func fetchGoals() {
+        guard let myUser = appState.currentUser else { return }
+
+        if !appState.goals.isEmpty { return }
+        
+        let urlString = "http://124.56.5.77/fletter/getGoals.php?userId=\(myUser.usersId)"
+        guard let url = URL(string: urlString) else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let decodedGoals = try JSONDecoder().decode([Goal].self, from: data)
+                    
+                    DispatchQueue.main.async {
+                        appState.goals = decodedGoals
+                        print("목표 로드 완료: \(decodedGoals.count)개")
+                    }
+                } catch {
+                    print("디코딩 실패 원인: \(error)")
+                }
+            }
+        }.resume()
+    }
     
     func sendLetter() {
         guard let myUser = appState.currentUser else { return }
         
-        let finalReceiverId: String
-        
-        // 받는 사람 아이디 결정
+        var finalReceiverId: String
         if let original = replyToLetter {
-            // 답장: 원본 보낸 사람의 ID 사용 (우선순위: userId > nickName)
             finalReceiverId = original.senderUserId ?? original.senderNickName ?? ""
+            receiveDate = Date()
         } else {
-            // 나(0) 또는 친구(1)
-            if sendType == 0 {
-                finalReceiverId = myUser.id
-            } else {
-                if receiverIdInput.isEmpty {
-                    alertMessage = "받는 사람 아이디를 입력해주세요."
-                    showAlert = true; return
-                }
+            if sendType == 0 { finalReceiverId = myUser.id }
+            else {
+                if receiverIdInput.isEmpty { showAlert = true; alertMessage = "ID 입력"; return }
                 finalReceiverId = receiverIdInput
             }
         }
         
-        if title.isEmpty || content.isEmpty {
-            alertMessage = "제목과 내용을 입력해주세요."
-            showAlert = true; return
-        }
+        if title.isEmpty || content.isEmpty { showAlert = true; alertMessage = "내용 입력"; return }
         
         guard let url = URL(string: "http://124.56.5.77/fletter/LetterCompose.php") else { return }
         var request = URLRequest(url: url)
@@ -110,25 +134,23 @@ struct LetterComposeView: View {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let dateStr = formatter.string(from: receiveDate)
         let parentId = replyToLetter?.lettersId ?? 0
+        let goalIdValue = selectedGoalId ?? 0
         
-        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)"
+        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)&goalId=\(goalIdValue)"
         
         request.httpBody = body.data(using: .utf8)
         isLoading = true
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async { isLoading = false }
-            if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                print("서버응답: \(responseString)")
+            if let data = data, let str = String(data: data, encoding: .utf8) {
                 DispatchQueue.main.async {
-                    if responseString.contains("success") {
-                        alertMessage = "발송 성공!"
+                    if str.contains("success") {
+                        alertMessage = "성공!"
                         showAlert = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            presentationMode.wrappedValue.dismiss()
-                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { presentationMode.wrappedValue.dismiss() }
                     } else {
-                        alertMessage = "실패: \(responseString)"
+                        alertMessage = "실패: \(str)"
                         showAlert = true
                     }
                 }

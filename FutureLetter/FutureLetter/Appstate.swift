@@ -1,10 +1,3 @@
-//
-//  AppState.swift
-//  FutureLetter
-//
-//  Created by mac07 on 11/2/25.
-//
-
 import Foundation
 import SwiftUI
 import Combine
@@ -27,44 +20,57 @@ struct Goal: Identifiable, Codable {
     let goalsId: Int
     let title: String
     let deadLine: String
+    let categoriesId: Int
+    
+    let creationDate: String?
     let createdAt: String?
     let updatedAt: String?
-    let categoriesId: Int
-    let usersId: Int
-
+    let usersId: Int?
+    let category: String?
+    let progress: Int?
+    let description: String?
+    
     var id: Int { goalsId }
+    
+    enum CodingKeys: String, CodingKey {
+        case goalsId, title, deadLine, categoriesId
+        case creationDate, createdAt, updatedAt
+        case usersId, category, progress, description
+    }
 }
 
 struct Letter: Identifiable, Codable {
-    let receiverNickName: String?
-    let receiverId: Int?
     let lettersId: Int
+    let title: String
+    let content: String
     let senderId: Int
     let senderNickName: String?
     let senderUserId: String?
-    let title: String
-    let content: String
+    let receiverId: Int?
+    let receiverNickName: String?
+    
     let expectedArrivalTime: String
     let isRead: Int
-    let parentLettersId: Int
     let isLocked: Int
+    let parentLettersId: Int
     let replyCount: Int?
     
-    enum CodingKeys: String, CodingKey {
-        case lettersId, senderId, senderNickName, senderUserId
-        case title, content, expectedArrivalTime
-        case isRead, parentLettersId, isLocked, receiverId, receiverNickName
-        case replyCount
-    }
-    
+    let goalId: Int?
+
     var id: Int { lettersId }
+
+    enum CodingKeys: String, CodingKey {
+        case lettersId, title, content
+        case senderId, senderNickName, senderUserId
+        case receiverId, receiverNickName
+        case expectedArrivalTime, isRead, isLocked, parentLettersId, replyCount
+        case goalId
+    }
 
     var arrivalDate: Date {
         let dateString = String(expectedArrivalTime.prefix(10))
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone.current
         return formatter.date(from: dateString) ?? Date.distantFuture
     }
     
@@ -82,12 +88,32 @@ struct Friend: Identifiable, Codable {
     var blocked: Bool = false
 }
 
-
 final class AppState: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoggedIn: Bool = false
+    
     @Published var goals: [Goal] = []
     @Published var inbox: [Letter] = []
+    @Published var sentbox: [Letter] = []
+    
     @Published var friends: [Friend] = []
     @Published var friendRequests: [Friend] = []
+    
+    func fetchInbox() {
+        guard let user = currentUser else { return }
+        let urlString = "http://124.56.5.77/fletter/getMessages.php?userId=\(user.usersId)"
+        guard let url = URL(string: urlString) else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else { return }
+            do {
+                let decodedLetters = try JSONDecoder().decode([Letter].self, from: data)
+                DispatchQueue.main.async {
+                    self.inbox = decodedLetters
+                }
+            } catch {
+                print(error)
+            }
+        }.resume()
+    }
 }

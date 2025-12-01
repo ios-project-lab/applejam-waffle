@@ -31,7 +31,7 @@ struct GoalListView: View {
     }
     var categoriesView : some View {
         HStack(spacing: 8) {
-            // categories 배열을 사용하여 버튼을 동적으로 생성합니다.
+            // categories 배열을 사용하여 버튼을 동적으로 생성
             ForEach(categories) { category in
                 Button(action: {
                     // 버튼 클릭 시 선택 상태 업데이트
@@ -58,8 +58,8 @@ struct GoalListView: View {
         ScrollView {
             LazyVStack(spacing: 15) {
                 ForEach(goalStore.goals.filter { goal in
-                    // 1. selectedCategoryId가 nil이면 (아무것도 선택 안 됨), 모든 목표를 표시 (true 반환)
-                    // 2. selectedCategoryId가 값이 있으면, 해당 ID와 goal.categoryId가 일치하는 목표만 표시
+                    // selectedCategoryId가 nil이면 (아무것도 선택 안 됨), 모든 목표를 표시 (true 반환)
+                    // selectedCategoryId가 값이 있으면, 해당 ID와 goal.categoryId가 일치하는 목표만 표시
                     selectedCategoryId == nil || goal.categoriesId == selectedCategoryId
                 }) { goal in // 필터링된 목표(goal)를 사용하여 GoalItemView 생성
                     NavigationLink(destination: Text("\(goal.title) 상세 뷰")) {

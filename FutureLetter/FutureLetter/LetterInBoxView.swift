@@ -131,7 +131,7 @@ struct LetterInBoxView: View {
     func fetchInbox() {
         guard let userId = appState.currentUser?.usersId else { return }
 
-        let urlString = "http://124.56.5.77/fletter/getInbox.php?userId=\(userId)"
+        let urlString = "http://124.56.5.77/fletter/getInBox.php?userId=\(userId)"
         guard let url = URL(string: urlString) else { return }
         
         isLoading = true

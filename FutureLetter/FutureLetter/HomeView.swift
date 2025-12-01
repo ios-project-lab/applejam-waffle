@@ -2,8 +2,6 @@
 //  HomeView.swift
 //  FutureLetter
 //
-//  Created by Chaemin Yu on 10/27/25.
-//
 
 import SwiftUI
 
@@ -13,51 +11,73 @@ struct HomeView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("나의 변화 그래프")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        Text("목표 진행 상황을 확인하세요.")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
+            VStack(spacing: 0) {
+
+                VStack(spacing: 16) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("나의 변화 그래프")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Text("목표 진행 상황을 확인하세요.")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white)
+                        .frame(height: 120)
+                        .overlay(Text("그래프 삽입 예정").foregroundColor(.gray))
+                    
+                    HStack {
+                        NavigationLink(destination: SetGoalView()) {
+                            Text("목표 작성")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(8)
+                                .foregroundColor(.black)
+                        }
+                        NavigationLink(destination: LetterComposeView()) {
+                            Text("편지쓰기")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(8)
+                                .foregroundColor(.black)
+                        }
+                        NavigationLink(destination: FriendSearchView()) {
+                            Text("친구찾기")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(8)
+                                .foregroundColor(.black)
+                        }
+                    }
                 }
-
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white)
-                    .frame(height: 120)
-                    .overlay(Text("그래프 삽입").foregroundColor(.black).font(.subheadline))
-
-                HStack {
-                    NavigationLink(destination: SetGoalView()) {
-                        Text("목표 작성").padding().background(Color.white).cornerRadius(8)
-                    }
-                    NavigationLink(destination: LetterComposeView()) {
-                        Text("편지쓰기").padding().background(Color.white).cornerRadius(8)
-                    }
-                    NavigationLink(destination: FriendSearchView()) {
-                        Text("친구찾기").padding().background(Color.white).cornerRadius(8)
-                    }
-                }
-
+                .padding()
+                .background(Color("NavyBackground"))
+         
                 List {
                     RecentLettersSection()
                     GoalsSection()
                 }
                 .listStyle(.insetGrouped)
             }
-            .padding()
             .navigationTitle("홈")
-            .background(Color("NavyBackground").edgesIgnoringSafeArea(.all))
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                    // 로드 호출
-                    if goalStore.goals.isEmpty {
-                        goalStore.loadGoalsFromServer()
-                    }
+                // 데이터 로드
+                if goalStore.goals.isEmpty {
+                    goalStore.loadGoalsFromServer()
                 }
+                if appState.inbox.isEmpty {
+                    appState.fetchInbox()
+                }
+            }
         }
     }
 }
@@ -67,9 +87,14 @@ struct RecentLettersSection: View {
     
     var body: some View {
         Section(header: Text("최근 편지")) {
-            ForEach(Array(appState.inbox.prefix(3))) { letter in
-                NavigationLink(destination: LetterDetailView(letter: letter)) {
-                    LetterItemView(letter: letter)
+            if appState.inbox.isEmpty {
+                Text("도착한 편지가 없습니다.")
+                    .foregroundColor(.gray)
+            } else {
+                ForEach(Array(appState.inbox.prefix(3))) { letter in
+                    NavigationLink(destination: LetterDetailView(letter: letter)) {
+                        LetterItemView(letter: letter)
+                    }
                 }
             }
         }
@@ -80,22 +105,26 @@ struct GoalsSection: View {
     @EnvironmentObject var goalStore: GoalStore
 
     var body: some View {
-        Section {
-            ForEach(topSummaries) { goal in
-                NavigationLink {
-                    Text("\(goal.title) 상세 뷰")
-                } label: {
-                    GoalHomeItemView(goal:goal)
+        Section(header: Text("내 목표")) {
+            if goalStore.goals.isEmpty {
+                Text("등록된 목표가 없습니다.")
+                    .foregroundColor(.gray)
+            } else {
+                ForEach(topSummaries) { goal in
+                    NavigationLink {
+                        Text("\(goal.title) 상세 뷰")
+                    } label: {
+                        GoalHomeItemView(goal: goal)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
-        } header: {
-            Text("내 목표")
         }
     }
-    private var topSummaries: [GoalItem] {
+    
+    private var topSummaries: [Goal] {
         let sorted = goalStore.goals.sorted {
-            ($0.creationDate) > ($1.creationDate)
+            ($0.creationDate ?? "") > ($1.creationDate ?? "")
         }
         return Array(sorted.prefix(3))
     }
