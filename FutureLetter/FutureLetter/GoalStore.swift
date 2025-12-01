@@ -58,6 +58,8 @@ class GoalStore: ObservableObject {
                 print("서버 응답 데이터 없음")
                 return
             }
+            let str = String(decoding: data, as: Unicode.UTF8.self)
+            print("data", str)
 
             // JSON 디코딩
             do {

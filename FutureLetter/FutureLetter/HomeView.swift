@@ -72,7 +72,7 @@ struct HomeView: View {
             .onAppear {
                 // 로드 호출
                 if goalStore.goals.isEmpty {
-                    // Todo: 예외처리
+                    goalStore.loadGoalsFromServer()
                 }
                 
                 if appState.allLetters.isEmpty {
