@@ -34,7 +34,7 @@ class LetterService {
                 completion: @escaping ([LetterItem]
         ) -> Void) {
         
-        let urlString = "http://localhost/fletter/getLetterByLettersId.php?userId=\(usersId)&letterId=\(lettersId)"
+        let urlString = "http://124.56.5.77/fletter/getLetterByLettersId.php?userId=\(usersId)&letterId=\(lettersId)"
             
         guard let url = URL(string: urlString) else {
             print("잘못된 URL")
