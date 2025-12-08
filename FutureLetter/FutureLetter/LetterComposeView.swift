@@ -1,5 +1,19 @@
 import SwiftUI
 
+struct Emotion: Identifiable, Hashable {
+    let id: Int
+    let name: String
+}
+
+let emotions = [
+    Emotion(id: 1, name: "기쁨 😊"),
+    Emotion(id: 2, name: "슬픔 😢"),
+    Emotion(id: 3, name: "분노 😡"),
+    Emotion(id: 4, name: "불안 😟"),
+    Emotion(id: 5, name: "평온 😌"),
+    Emotion(id: 6, name: "설렘 🤩")
+]
+
 struct LetterComposeView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
@@ -15,11 +29,13 @@ struct LetterComposeView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var selectedGoalId: Int? = nil
+    @State private var selectedEmotionId: Int? = nil
     
     var body: some View {
         NavigationView {
             VStack {
                 Form {
+                    // 받는 사람
                     Section(header: Text("받는 사람")) {
                         if let original = replyToLetter {
                             Text("To: \(original.senderNickName ?? "알 수 없음") (답장)")
@@ -37,27 +53,42 @@ struct LetterComposeView: View {
                         }
                     }
                     
+                    // 답장이 아닐 때만(새 편지일 때만) 표시되는 항목들
                     if replyToLetter == nil {
+                        
+                        // 도착 예정일
                         Section(header: Text("도착 예정일")) {
                             DatePicker("언제 도착할까요?", selection: $receiveDate, in: Date()..., displayedComponents: [.date])
                         }
-                    }
-                    
-                    // 목표 선택
-                    Section(header: Text("어떤 목표를 위한 편지인가요?")) {
-                        if appState.goals.isEmpty {
-                            Text("목표 불러오는 중...").foregroundColor(.gray)
-                        } else {
-                            Picker("목표 선택", selection: $selectedGoalId) {
+                        
+                        // 감정 선택 (답장 시 숨김)
+                        Section(header: Text("편지에 담긴 감정")) {
+                            Picker("감정 선택", selection: $selectedEmotionId) {
                                 Text("선택 안 함").tag(nil as Int?)
-                                ForEach(appState.goals) { goal in
-                                    Text(goal.title).tag(goal.goalsId as Int?)
+                                ForEach(emotions, id: \.self) { emotion in
+                                    Text(emotion.name).tag(emotion.id as Int?)
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
                         }
+                        
+                        // 목표 선택 (답장 시 숨김)
+                        Section(header: Text("어떤 목표를 위한 편지인가요?")) {
+                            if appState.goals.isEmpty {
+                                Text("목표 불러오는 중...").foregroundColor(.gray)
+                            } else {
+                                Picker("목표 선택", selection: $selectedGoalId) {
+                                    Text("선택 안 함").tag(nil as Int?)
+                                    ForEach(appState.goals) { goal in
+                                        Text(goal.title).tag(goal.goalsId as Int?)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                            }
+                        }
                     }
                     
+                    // 내용 입력 (항상 표시)
                     Section(header: Text("편지 내용")) {
                         TextField("제목", text: $title)
                         TextEditor(text: $content).frame(height: 200)
@@ -76,17 +107,19 @@ struct LetterComposeView: View {
             }
             .navigationTitle(replyToLetter == nil ? "편지 쓰기" : "답장 쓰기")
             .onAppear {
-                fetchGoals()
+                // 답장이 아닐 때만 목표를 불러옴
+                if replyToLetter == nil {
+                    fetchGoals()
+                }
             }
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
             }
         }
     }
-    // 목표 가져오기
+    
     func fetchGoals() {
         guard let myUser = appState.currentUser else { return }
-
         if !appState.goals.isEmpty { return }
         
         let urlString = "http://124.56.5.77/fletter/getGoals.php?userId=\(myUser.usersId)"
@@ -96,13 +129,11 @@ struct LetterComposeView: View {
             if let data = data {
                 do {
                     let decodedGoals = try JSONDecoder().decode([Goal].self, from: data)
-                    
                     DispatchQueue.main.async {
                         appState.goals = decodedGoals
-                        print("목표 로드 완료: \(decodedGoals.count)개")
                     }
                 } catch {
-                    print("디코딩 실패 원인: \(error)")
+                    print("디코딩 실패: \(error)")
                 }
             }
         }.resume()
@@ -133,10 +164,12 @@ struct LetterComposeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let dateStr = formatter.string(from: receiveDate)
+        
         let parentId = replyToLetter?.lettersId ?? 0
         let goalIdValue = selectedGoalId ?? 0
+        let emotionIdValue = selectedEmotionId ?? 0
         
-        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)&goalId=\(goalIdValue)"
+        let body = "senderId=\(myUser.usersId)&receiverId=\(finalReceiverId)&title=\(title)&content=\(content)&expectedArrivalTime=\(dateStr)&parentLettersId=\(parentId)&goalId=\(goalIdValue)&emotionsId=\(emotionIdValue)"
         
         request.httpBody = body.data(using: .utf8)
         isLoading = true

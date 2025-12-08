@@ -54,16 +54,14 @@ struct Letter: Identifiable, Codable {
     let senderUserId: String?
     let receiverId: Int?
     let receiverNickName: String?
-    
     let expectedArrivalTime: String
     let isRead: Int
     let isLocked: Int
     let parentLettersId: Int
     let replyCount: Int?
-    
     let goalId: Int?
-    
     let aiCheering: String?
+    let emotionsId : Int?
 
     var id: Int { lettersId }
 
@@ -74,6 +72,7 @@ struct Letter: Identifiable, Codable {
         case expectedArrivalTime, isRead, isLocked, parentLettersId, replyCount
         case goalId
         case aiCheering
+        case emotionsId
     }
 
     var arrivalDate: Date {

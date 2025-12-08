@@ -11,11 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-//$host = getenv('DB_HOST');
-//$user = getenv('DB_USER');
-//$pw = getenv('DB_PASSWORD');
-//$dbName = getenv('DB_NAME');
-
 include_once('./config.php');
 
 $conn = new mysqli($host, $user, $pw, $dbName);
@@ -31,7 +26,10 @@ $title = $_POST['title'] ?? '';
 $content = $_POST['content'] ?? '';
 $expectedArrivalTime = $_POST['expectedArrivalTime'] ?? '';
 $parentLettersId = $_POST['parentLettersId'] ?? 0;
+$emotionsId = $_POST['emotionsId'] ?? 0;
+$goalId = $_POST['goalId'] ?? 0;
 
+// 받는 사람 찾기
 $findUser = $conn->prepare("SELECT usersId FROM Users WHERE id = ?");
 $findUser->bind_param("s", $receiverStringId);
 $findUser->execute();
@@ -43,55 +41,40 @@ if (!$userRow) {
     exit;
 }
 
-// 진짜 receiverId(PK, int)
-$receiverId = (int)$userRow['usersId'];
-
+$receiverIntId = (int)$userRow['usersId'];
 
 if (empty($senderIntId) || empty($receiverStringId)) {
-    echo json_encode(["error" => "보내는 사람 또는 받는 사람 정보가 없습니다."]);
+    echo json_encode(["error" => "보내는 사람/받는 사람 정보 누락"]);
     exit;
 }
 
-$findUser = $conn->prepare("SELECT usersId FROM Users WHERE id = ?");
-$findUser->bind_param("s", $receiverStringId);
-$findUser->execute();
-$result = $findUser->get_result();
-$row = $result->fetch_assoc();
-
-if (!$row) {
-    echo json_encode(["error" => "받는 사람 아이디($receiverStringId)를 찾을 수 없습니다."]);
-    exit;
-}
-
-$receiverIntId = $row['usersId'];
 $receiverType = ($senderIntId == $receiverIntId) ? 0 : 1;
 
 $sql = "INSERT INTO Letters (
     senderId, receiverId, title, content, expectedArrivalTime, 
     receiverType, arrivedType, emotionsId, parentLettersId, 
     createdAt, updatedAt, isRead, isLocked
-) VALUES (?, ?, ?, ?, ?, ?, 1, 1, ?, NOW(), NOW(), 0, 1)";
+) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, NOW(), NOW(), 0, 1)";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("iisssii",
+
+$stmt->bind_param("iisssiii",
     $senderIntId,
     $receiverIntId,
     $title,
     $content,
     $expectedArrivalTime,
     $receiverType,
+    $emotionsId,
     $parentLettersId
 );
 
-if ($stmt->execute()) {
-    echo json_encode(["success" => "편지가 성공적으로 발송되었습니다."]);
-} else {
+if (!$stmt->execute()) {
     echo json_encode(["error" => "DB 입력 실패: " . $stmt->error]);
+    exit;
 }
 
-// ----------------------------
-// 4) 방금 생성된 letterId 가져오기
-// ----------------------------
+// 방금 생성된 letterId 가져오기
 $letterId = $conn->insert_id;
 
 if (!$letterId) {
@@ -99,7 +82,7 @@ if (!$letterId) {
     exit;
 }
 
-// DB에서 해당 레터 가져오기
+// AI 분석 로직
 $sql = "SELECT * FROM Letters WHERE lettersId = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $letterId);
@@ -112,12 +95,10 @@ if (!$letter) {
     exit;
 }
 
-// DB에서 분석용 필드 가져오기
-$title   = $letter["title"];
-$content = $letter["content"];
-$emotion = $letter["emotionsId"];
-$goal    = $letter["goal"] ?? "";
-
+// 분석용 데이터 준비
+$ai_content = $letter["content"];
+$ai_emotion = $letter["emotionsId"];
+$ai_goal    = $goalId;
 
 // OpenAI 요청 함수
 function openai_request($prompt, $apiKey) {
@@ -165,40 +146,25 @@ Return a single JSON:
   }
 }
 
-TEXT: \"$content\"
-USER_EMOTION: \"$emotion\"
-USER_GOAL: \"$goal\"
+TEXT: \"$ai_content\"
+USER_EMOTION_ID: \"$ai_emotion\"
+USER_GOAL_ID: \"$ai_goal\"
 ";
 
 // OpenAI 호출
-$aiResponse = openai_request($prompt, $apiKey);
-$aiContent = $aiResponse["choices"][0]["message"]["content"] ?? "{}";
+if (isset($apiKey)) {
+    $aiResponse = openai_request($prompt, $apiKey);
+    $aiContent = $aiResponse["choices"][0]["message"]["content"] ?? "{}";
 
-// ----------------------------
-// DB UPDATE (기존 letterId에 aiCheering 업데이트)
-// ----------------------------
-
-$sql = "
-UPDATE Letters
-SET aiCheering = ?
-WHERE lettersId = ?
-";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param(
-    "si",
-    $aiContent,     // 업데이트할 AI 문자열
-    $letterId       // 이미 존재하는 letterId
-);
-
-if (!$stmt->execute()) {
-    echo json_encode(["error" => "AI 업데이트 실패: " . $stmt->error]);
-    exit;
+    $sql = "UPDATE Letters SET aiCheering = ? WHERE lettersId = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $aiContent, $letterId);
+    $stmt->execute();
+} else {
+    $aiContent = "{}";
 }
 
-// ----------------------------
-// 7) 성공 반환
-// ----------------------------
+// 성공 반환 & 알림
 echo json_encode([
     "success" => true,
     "message" => "편지가 성공적으로 발송되었습니다.",
@@ -207,25 +173,15 @@ echo json_encode([
 ]);
 
 // 알림 생성
-if($senderIntId != reveiverId){
-    $notifSql = "
-        INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId)
-        VALUES ('편지 도착', '친구가 보낸 편지: {$title}', 0, 1, ?)
-    ";
-    // notificationTypesId = 1 → 미래편지 도착 알림
-}else{
-    $notifSql = "
-        INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId)
-        VALUES ('미래편지 도착', '미래의 나에게서 온 편지: {$title}', 0, 1, ?)
-    ";
-    // notificationTypesId = 1 → 미래편지 도착 알림
+if ($senderIntId != $receiverIntId) {
+    $notifSql = "INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId) VALUES ('편지 도착', '친구가 보낸 편지: {$title}', 0, 1, ?)";
+} else {
+    $notifSql = "INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId) VALUES ('미래편지 도착', '미래의 나에게서 온 편지: {$title}', 0, 1, ?)";
 }
 
 $notif = $conn->prepare($notifSql);
-$notif->bind_param("i", $receiverId);
-if (!$notif->execute()) {
-    echo "알림 insert 에러: " . $notif->error;
-}
+$notif->bind_param("i", $receiverIntId);
+$notif->execute();
 
 $conn->close();
 ?>
