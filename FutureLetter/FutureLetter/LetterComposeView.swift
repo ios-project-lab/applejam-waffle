@@ -18,6 +18,8 @@ struct LetterComposeView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.presentationMode) var presentationMode
     
+    @State private var useRandomReceiveDate: Bool = false
+
     var replyToLetter: Letter? = nil
     
     @State private var receiverIdInput: String = ""
@@ -60,6 +62,30 @@ struct LetterComposeView: View {
                         Section(header: Text("도착 예정일")) {
                             DatePicker("언제 도착할까요?", selection: $receiveDate, in: Date()..., displayedComponents: [.date])
                         }
+                        HStack {
+                            Button {
+                                useRandomReceiveDate.toggle()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: useRandomReceiveDate ? "checkmark.circle.fill" : "circle")
+                                    Text("랜덤")
+                                }
+                                .font(.caption)
+                                .foregroundColor(useRandomReceiveDate ? .white : .blue)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(useRandomReceiveDate ? Color.blue : Color.blue.opacity(0.15))
+                                .cornerRadius(10)
+                            }
+
+                            Spacer()
+
+                            // 🔍 상태 출력 (디버그/확인용)
+                            Text(useRandomReceiveDate ? "true" : "false")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+
                         
                         // 감정 선택 (답장 시 숨김)
                         Section(header: Text("편지에 담긴 감정")) {
@@ -138,6 +164,7 @@ struct LetterComposeView: View {
             }
         }.resume()
     }
+
     
     func sendLetter() {
         guard let myUser = appState.currentUser else { return }
@@ -181,7 +208,8 @@ struct LetterComposeView: View {
             "&content=\(encode(content))" +
             "&expectedArrivalTime=\(encode(dateStr))" +
             "&parentLettersId=\(parentId)" +
-            "&goalId=\(goalIdValue)"
+            "&goalId=\(goalIdValue)" +
+            "&useRandom=\(useRandomReceiveDate ? 1 : 0)"
 
         print("편지 작성 시, 데이터 확인", body)
 
