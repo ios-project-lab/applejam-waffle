@@ -20,29 +20,29 @@ struct LoginView: View {
     @State private var showSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
-
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
                 Text("로그인")
                     .font(.title2)
                     .foregroundColor(.white)
-
+                
                 TextField("ID", text: $id)
                     .textFieldStyle(.roundedBorder)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
-
+                
                 SecureField("비밀번호", text: $pwd)
                     .textFieldStyle(.roundedBorder)
-
+                
                 // 에러 메시지가 있을 때만 표시
                 if let error = errorMessage {
                     Text(error)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
-
+                
                 Button {
                     login()
                 } label: {
@@ -61,7 +61,7 @@ struct LoginView: View {
                     }
                 }
                 .disabled(isLoading)
-
+                
                 Button {
                     showSignUp = true
                 } label: {
@@ -70,7 +70,7 @@ struct LoginView: View {
                         .foregroundColor(.yellow)
                 }
                 .padding(.top, 8)
-
+                
                 Spacer()
             }
             .padding()
@@ -84,13 +84,13 @@ struct LoginView: View {
         .navigationTitle("")
         .navigationBarHidden(true)
     }
-
+    
     func login() {
         guard let url = URL(string: "http://124.56.5.77/fletter/login.php") else { return }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-
+        
         let body = "id=\(id.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&pwd=\(pwd.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
         
         request.httpBody = body.data(using: .utf8)
@@ -98,22 +98,22 @@ struct LoginView: View {
         
         isLoading = true
         errorMessage = nil
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             
             DispatchQueue.main.async {
                 isLoading = false
-
+                
                 if let error = error {
                     errorMessage = "서버 오류: \(error.localizedDescription)"
                     return
                 }
-
+                
                 guard let httpResponse = response as? HTTPURLResponse, let data = data else {
                     errorMessage = "서버 응답 오류"
                     return
                 }
-
+                
                 if httpResponse.statusCode == 200 {
                     if let loginData = try? JSONDecoder().decode(LoginResponse.self, from: data) {
                         print("로그인 성공:", loginData)

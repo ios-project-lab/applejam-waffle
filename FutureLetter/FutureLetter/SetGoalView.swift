@@ -144,10 +144,16 @@ struct SetGoalView: View {
         
         // 현재 유저 ID
         let currentUserId = appState.currentUser?.usersId ?? 0
-        
-        let postString = "usersId=\(currentUserId)&title=\(title)&deadLine=\(dateString)&categoriesId=\(categoryId)"
-        
-        request.httpBody = postString.data(using: .utf8)
+       
+        var components = URLComponents()
+        components.queryItems = [
+            URLQueryItem(name: "usersId", value: "\(currentUserId)"),
+            URLQueryItem(name: "title", value: title),
+            URLQueryItem(name: "deadLine", value: dateString),
+            URLQueryItem(name: "categoriesId", value: "\(categoryId)")
+        ]
+
+        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
         
         isLoading = true
         

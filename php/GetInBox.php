@@ -11,12 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-//$host = getenv('DB_HOST');
-//$user = getenv('DB_USER');
-//$pw = getenv('DB_PASSWORD');
-//$dbName = getenv('DB_NAME');
-
-include_once(./config.php);
+include_once("./config.php");
 
 $conn = new mysqli($host, $user, $pw, $dbName);
 $conn->set_charset("utf8");
@@ -39,20 +34,22 @@ $sql = "
         L.title,
         L.content,
         
-        -- 보낸 사람 정보 (S)
+        -- 보낸 사람 정보
         L.senderId,
         S.nickName AS senderNickName, 
         S.id AS senderUserId,
         
-        -- 받는 사람 정보 (R)
+        -- 받는 사람 정보
         L.receiverId,
         R.nickName AS receiverNickName,
-        
+        L.createdAt,        
         L.expectedArrivalTime,
         L.isRead,
         L.isLocked,
         L.parentLettersId,
-        
+        L.emotionsId,
+        L.aiCheering,  
+      
         -- 답장 개수 계산
         (SELECT COUNT(*) FROM Letters WHERE parentLettersId = L.lettersId) AS replyCount,
         
@@ -60,8 +57,8 @@ $sql = "
         NULL AS goalId
         
     FROM Letters L
-    LEFT JOIN users S ON L.senderId = S.usersId
-    LEFT JOIN users R ON L.receiverId = R.usersId
+    LEFT JOIN Users S ON L.senderId = S.usersId
+    LEFT JOIN Users R ON L.receiverId = R.usersId
     WHERE L.receiverId = $userId OR L.senderId = $userId
     ORDER BY L.expectedArrivalTime DESC
 ";
@@ -77,6 +74,7 @@ if ($result) {
         $row['isRead'] = (int)$row['isRead'];
         $row['isLocked'] = (int)$row['isLocked'];
         $row['parentLettersId'] = (int)$row['parentLettersId'];
+        $row['emotionsId'] = (int)$row['emotionsId'];
         $row['replyCount'] = (int)$row['replyCount'];
         $row['goalId'] = null;
 

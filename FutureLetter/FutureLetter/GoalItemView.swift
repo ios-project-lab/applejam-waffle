@@ -51,7 +51,7 @@ struct GoalItemView: View {
             
             NavigationLink(destination: GoalHistoryListView(goalsId: goal.goalsId)) { // 히스토리뷰로 목표 전달
                 Text("히스토리 보기")
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 5)
                     .padding(.vertical, 5)
                     .background(Color.yellow)
                     .foregroundColor(.black)
@@ -59,6 +59,7 @@ struct GoalItemView: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.white)
         .foregroundColor(.black)

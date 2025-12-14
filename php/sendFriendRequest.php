@@ -1,60 +1,79 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: *');
 
 include_once('./config.php');
 
 // MySQL 연결
 $conn = new mysqli($host, $user, $pw, $dbName);
 if ($conn->connect_error) {
-    echo json_encode(array("error" => "db_connect_fail"));
+    echo json_encode(["error" => "db_connect_fail"]);
     exit;
 }
 
 // iOS 요청 값
-$requesterId = $_POST['usersId'];  // 요청 보낸 사용자
-$friendNickName = $_POST['friendNickName']; // 닉네임으로 친구 찾기
+$requesterId = intval($_POST['usersId']);
+$friendNickName = $_POST['friendNickName'];
 
 if (!$requesterId || !$friendNickName) {
-    echo json_encode(array("error" => "missing_params"));
+    echo json_encode(["error" => "missing_params"]);
     exit;
 }
 
-// 1) 닉네임으로 receiverId 찾기
-$userQuery = "SELECT id FROM Users WHERE nickName = '$friendNickName'";
-$userResult = mysqli_query($conn, $userQuery);
+// 1) 닉네임으로 receiverId 찾기 (id + usersId 둘 다)
+$findUser = $conn->prepare("SELECT id, usersId FROM Users WHERE nickName = ?");
+$findUser->bind_param("s", $friendNickName);
+$findUser->execute();
+$userResult = $findUser->get_result();
 
-if (!$userResult || mysqli_num_rows($userResult) == 0) {
-    echo "user_not_found";
+if ($userResult->num_rows == 0) {
+    echo json_encode(["error" => "user_not_found"]);
     exit;
 }
 
-$userData = mysqli_fetch_assoc($userResult);
-$receiverId = $userData['id'];
+$userRow = $userResult->fetch_assoc();
+$receiverId = intval($userRow['id']);       // Friends 테이블용
+$receiverUsersId = intval($userRow['usersId']); // Notifications.usersId 용
 
-// 2) 이미 친구 요청이 있는지 확인
+// 2) 중복 요청 검사
 $checkQuery = "
     SELECT * FROM Friends
-    WHERE requesterId = '$requesterId' AND receiverId = '$receiverId'
-       OR requesterId = '$receiverId' AND receiverId = '$requesterId'
+    WHERE (requesterId = $requesterId AND receiverId = $receiverId)
+       OR (requesterId = $receiverId AND receiverId = $requesterId)
 ";
-$checkResult = mysqli_query($conn, $checkQuery);
+$checkResult = $conn->query($checkQuery);
 
-if (mysqli_num_rows($checkResult) > 0) {
-    echo "already_exists";
+if ($checkResult->num_rows > 0) {
+    echo json_encode(["error" => "already_exists"]);
     exit;
 }
 
-// 3) 친구 요청 생성 (friendStatus = pending)
-$insertQuery = "
+// 3) 친구 요청 생성
+$insertQuery = $conn->prepare("
     INSERT INTO Friends (requesterId, receiverId, friendStatus, createdAt, updatedAt)
-    VALUES ('$requesterId', '$receiverId', '1', NOW(), NOW())
-";
+    VALUES (?, ?, 1, NOW(), NOW())
+");
+$insertQuery->bind_param("ii", $requesterId, $receiverId);
 
-if (mysqli_query($conn, $insertQuery)) {
-    echo json_encode(array("status" => "success"));
-} else {
-    echo json_encode(array("error" => "insert_fail"));
+if (!$insertQuery->execute()) {
+    echo json_encode(["error" => "insert_fail"]);
+    exit;
 }
+
+// 4) 알림 생성
+$notifSql = $conn->prepare("
+    INSERT INTO Notifications (title, content, isRead, notificationTypesId, usersId)
+    VALUES ('친구 요청', '새로운 친구 요청이 왔습니다!', 0, 2, ?)
+");
+$notifSql->bind_param("i", $receiverUsersId);
+
+if (!$notifSql->execute()) {
+    echo json_encode(["error" => "notif_fail", "detail" => $notifSql->error]);
+    exit;
+}
+
+// 5) 성공 응답
+echo json_encode(["status" => "success"]);
+
 $conn->close();
 ?>

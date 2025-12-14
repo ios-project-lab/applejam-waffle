@@ -1,5 +1,5 @@
 <?php
-// getGoals.php
+// getLetterByLettersId.php
 
 // 헤더 설정
 header('Content-Type: application/json');

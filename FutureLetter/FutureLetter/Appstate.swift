@@ -16,6 +16,12 @@ struct User: Identifiable, Codable {
     var identifiableId: Int { usersId }
 }
 
+struct UpdateProfileResponse: Codable {
+    let success: Bool
+    let message: String?
+    let profileImageUrl: String?
+}
+
 struct Goal: Identifiable, Codable {
     let goalsId: Int
     let title: String
@@ -48,16 +54,14 @@ struct Letter: Identifiable, Codable {
     let senderUserId: String?
     let receiverId: Int?
     let receiverNickName: String?
-    
     let expectedArrivalTime: String
     let isRead: Int
     let isLocked: Int
     let parentLettersId: Int
     let replyCount: Int?
-    
     let goalId: Int?
-    
     let aiCheering: String?
+    let emotionsId : Int?
 
     var id: Int { lettersId }
 
@@ -68,6 +72,7 @@ struct Letter: Identifiable, Codable {
         case expectedArrivalTime, isRead, isLocked, parentLettersId, replyCount
         case goalId
         case aiCheering
+        case emotionsId
     }
 
     var arrivalDate: Date {
@@ -125,6 +130,18 @@ struct AICheeringOverview: Codable {
     let aiCheering: String?
 }
 
+struct AppNotification: Identifiable, Codable {
+    let notificationsId: Int
+    let title: String
+    let content: String
+    let isRead: Int
+    let createdAt: String
+    let notificationTypesId: Int
+    let code: String?
+    let name: String?
+    
+    var id: Int { notificationsId }
+}
 
 
 struct Friend: Identifiable, Codable {
@@ -178,11 +195,11 @@ final class AppState: ObservableObject {
                     
                     self.emotionStatsStore?.updateEmotionPoints(from: decodedLetters)
                     print("📈 감정 점수 업데이트 실행됨!")
-                    
-                    print("📩 로드된 편지 raw JSON:")
-                    if let raw = String(data: data, encoding: .utf8) {
-                        print(raw)
-                    }
+//                    
+//                    print("📩 로드된 편지 raw JSON:")
+//                    if let raw = String(data: data, encoding: .utf8) {
+//                        print(raw)
+//                    }
 
                 }
             } catch {
